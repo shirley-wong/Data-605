@@ -1,0 +1,281 @@
+---
+title: "Data 605 HW1: Vectors, Matrices, Systems of Equation"
+author: "Sin Ying Wong"
+date: "08/30/2020"
+output:
+  rmdformats::readthedown:
+    code_folding: hide
+    df_print: paged
+    highlight: tango
+    number_sections: yes
+    smooth_scroll: yes
+    theme: united
+    toc_collapsed: yes
+    toc_depth: 5
+    toc_float: yes
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+  pdf_document:
+    extra_dependencies:
+    - geometry
+    - multicol
+    - multirow
+  word_document:
+    toc: yes
+    toc_depth: '5'
+theme: lumen
+number_sections: yes
+toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+Please refer to the [Assignment 1 Document](https://github.com/shirley-wong/Data-605/blob/master/Assignment1/assign1.pdf).
+
+```{r libraries, message=FALSE, warning=FALSE}
+library(tidyr)
+library(dplyr)
+library(pracma)
+```
+
+# Problem Set 1
+
+You can think of vectors representing many dimensions of related information. For instance, Netfix might store all the ratings a user gives to movies in a vector. This is clearly a vector of very large dimensions (in the millions) and very sparse as the user might have rated only a few movies. Similarly, Amazon might store the items purchased by a user in a vector, with each slot or dimension representing a unique product and the value of the slot, the number of such items the user bought. One task that is frequently done in these settings is to find similarities between users. And, we can use dot-product between vectors to do just that. As you know, the dot-product is proportional to the length of two vectors and to the angle between them. In fact, the dot-product between two vectors, normalized by their lengths is called as the cosine distance and is frequently used in recommendation engines.
+
+## Part(1)
+Calculate the dot product $u\cdot v$ where $u = \begin{bmatrix} 0.5\\0.5 \end{bmatrix}$ and $v = \begin{bmatrix} 3\\-4 \end{bmatrix}$
+
+```{r Q1p1}
+u = c(0.5, 0.5)
+v = c(3, -4)
+dot_product_uv <- dot(u,v)
+dot_product_uv
+```
+
+The dot product of $u$ and $v$ is -0.5.
+$$u\cdot v = -0.5$$
+
+## Part(2)
+What are the lengths of $u$ and $v$? Please note that the mathematical notion of the length of a vector is not the same as a computer science definition.
+
+```{r Q1p2}
+length_u <- sqrt(dot(u,u))
+length_u
+length_v <- sqrt(dot(v,v))
+length_v
+```
+
+The length of $u$ is 0.7071068 and the length of $v$ is 5.
+$$\left \| u \right \| = 0.7071068$$
+$$\left \| v \right \| = 5$$
+
+## Part(3)
+What is the linear combination: $3u - 2v$?
+
+```{r Q1p3}
+3*u-2*v
+```
+
+The linear combination of $3u - 2v$ is:
+$$3u-2v = 3\begin{bmatrix} 0.5\\0.5 \end{bmatrix} -2\begin{bmatrix} 3\\-4 \end{bmatrix} = \begin{bmatrix} 1.5\\1.5 \end{bmatrix} -\begin{bmatrix} 6\\-8 \end{bmatrix} = \begin{bmatrix} -4.5\\9.5 \end{bmatrix}$$
+
+## Part(4)
+What is the angle between $u$ and $v$?
+
+```{r Q1p4}
+theta <- acos(dot_product_uv/length_u/length_v)
+theta  #in radian
+theta/pi*180  #in degree
+```
+
+By using the formula: $cos(\theta) =  \frac{u\cdot v }{\left \| u \right \| \left \| v \right \| }$ and the values we got from part 1 to part 3, the angle between $u$ and $v$ is 1.712693 radians, or 98.1301 degrees.
+
+$$ \theta = 1.712693 rad$$ , or
+$$ \theta = 98.1301^{\circ}$$
+
+
+
+# Problem Set 2
+
+Set up a system of equations with 3 variables and 3 constraints and solve for x. Please
+write a function in R that will take two variables (matrix A & constraint vector b) and
+solve using elimination. Your function should produce the right answer for the system of
+equations for any 3-variable, 3-equation system. You don't have to worry about degenerate
+cases and can safely assume that the function will only be tested with a system of equations
+that has a solution. Please note that you do have to worry about zero pivots, though. Please
+note that you should not use the built-in function `solve` to solve this system or use matrix
+inverses. The approach that you should employ is to construct an Upper Triangular Matrix
+and then back-substitute to get the solution. Alternatively, you can augment the matrix
+A with vector b and jointly apply the Gauss Jordan elimination procedure.
+
+Please test it with the system below and it should produce a solution $x$ = [-1.55, -0.32, 0.95].
+$$\begin{bmatrix} 1 & 1 & 3\\ 2 & -1 & 5\\ -1 & -2 & 4 \end{bmatrix} \begin{bmatrix}
+x_{1}\\ x_{2}\\ x_{3}\end{bmatrix} = \begin{bmatrix} 1\\ 2\\ 6\end{bmatrix}$$
+
+## Answer
+
+I will augment the matrix A with vector b and jointly apply  the Gauss Jordan elimination procedure.
+
+```{r GaussJordan}
+gaussjordan <- function(A,b){
+  #assume pivot exists in all columns
+  r1 <- TRUE; r2 <- TRUE; r3 <- TRUE
+  
+  #augment the matrix A with vector b
+  A <- cbind(A, as.matrix(b))
+
+  #find pivot in row 1 column 1
+  pivot_1 <- A[1,1]
+  if (pivot_1 == 0){
+    A = A[c(2,3,1),]
+    pivot_1 <- A[1,1]
+    if (pivot_1 == 0){
+      A = A[c(2,1,3),]
+      pivot_1 <- A[1,1]
+      if (pivot_1 == 0){
+        r1 = FALSE  #pivot does not exist in first column
+      }
+    }
+  }
+  
+  #if pivot1 exists in row 1 column 1
+  if (r1) {
+    #top row's leading entry becomes 1 (coef of x1)
+    A[c(1),] <- A[c(1),]/pivot_1
+    
+    #eliminate x1 values in row2 and row3
+    A[c(2),] = A[c(2),] - A[2,1]*A[c(1),]
+    A[c(3),] = A[c(3),] - A[3,1]*A[c(1),]
+  
+    #find pivot in row 2 column 2
+    pivot_2 <- A[2,2]
+    if (pivot_2 == 0){
+      A = A[c(1,3,2),]
+      pivot_2 <- A[2,2]
+      if (pivot_2 == 0)
+        r2 = FALSE  #pivot does not exist in second column
+    }
+    
+    #if pivot2 exists in row 2 column 2
+    if (r2) {
+      #2nd row's leading entry becomes 1 (coef of x2)
+      A[c(2),] <- A[c(2),]/pivot_2
+      
+      #eliminate x2 value in row1 and row3
+      A[c(1),] = A[c(1),] - A[1,2]*A[c(2),]
+      A[c(3),] = A[c(3),] - A[3,2]*A[c(2),]
+      
+      if (A[3,3] != 0){
+        #3rd row's leading entry becomes 1
+        A[c(3),] <- A[c(3),]/A[3,3]
+        
+        #eliminate x3 value in row1 and row2
+        A[c(1),] = A[c(1),] - A[1,3]*A[c(3),]
+        A[c(2),] = A[c(2),] - A[2,3]*A[c(3),]
+      }
+      else
+        r3 = FALSE
+    }
+    else { 
+      #if pivot2 does not exist in 2nd column
+      pivot_3 <- A[2,3]
+      if (pivot_3 == 0){
+        A = A[c(1,3,2),]
+        pivot_3 <- A[2,3]
+        if (pivot_3 == 0)
+          r3 = FALSE  #pivot3 does not exist in 3rd column
+      }
+      
+      if (r3) { 
+        #if r3 exists in row 2 column 3
+        #leading entry becomes 1 (coef of x3)
+        A[c(2),] <- A[c(2),]/pivot_3
+        
+        #eliminate x3 value in row1 and row3
+        A[c(1),] = A[c(1),] - A[1,3]*A[c(2),]
+        A[c(3),] = A[c(3),] - A[3,3]*A[c(2),]
+      }
+    }
+  }
+  
+  #if pivot1 does not exist column 1
+  if (!(r1)) {
+    #find pivot in second column
+    pivot_2 <- A[1,2]
+    if (pivot_2 == 0){
+      A = A[c(2,3,1),]
+      pivot_2 <- A[1,2]
+      if (pivot_2 == 0){
+        A = A[c(2,1,3),]
+        if (pivot_2 == 0){
+          r2 = FALSE  #pivot does not exist in 2nd column
+          
+          #find pivot3 in row 1 column 3
+          pivot_3 <- A[1,3]
+          if (pivot_3 == 0){
+            A = A[c(2,3,1),]
+            pivot_3 <- A[1,3]
+            if (pivot_3 == 0){
+              A = A[c(2,1,3),]
+              if (pivot_3 == 0)
+                r3 = FALSE  #pivot does not exist in all columns
+            }
+          }
+          
+          #if pivot exists in row 1 column 3
+          if (r3) {
+            #leading entry becomes 1 (coef of x3)
+            A[c(1),] <- A[c(1),]/pivot_3
+            
+            #eliminate x3 value in row2 and row3
+            A[c(2),] = A[c(2),] - A[2,3]*A[c(1),]
+            A[c(3),] = A[c(3),] - A[3,3]*A[c(1),]
+          }
+        }
+      }
+    }
+    
+    #if pivot exists in row 1 column 2
+    if (r2){
+      pivot_2 <- A[1,2]
+      #leading entry becomes 1 (coef of x2)
+      A[c(1),] <- A[c(1),]/pivot_2
+          
+      #eliminate x2 value in row2 and row3
+      A[c(2),] = A[c(2),] - A[2,2]*A[c(1),]
+      A[c(3),] = A[c(3),] - A[3,2]*A[c(1),]
+          
+      #find pivot in row 2 column 3
+      pivot_3 <- A[2,3]
+      if (pivot_3 == 0){
+        A = A[c(1,3,2),]
+        pivot_2 <- A[2,3]
+        if (pivot_3 == 0)
+          r3 = FALSE #pivot does not exist in 3rd column
+      }
+          
+      if (r3) {
+        #if pivot exists in row 2 column 3
+        #eliminate x3 value in row3
+        A[c(3),] = A[c(3),] - A[3,3]*A[c(2),]
+      }
+    }
+  }
+  
+  x <- A[,4]
+  round(x,2)
+}
+
+#test the system
+A <- matrix(c(1,1,3,2,-1,5,-1,-2,4), nrow=3, ncol=3, byrow=TRUE)
+b <- c(1,2,6)
+gaussjordan(A,b)
+```
+
+The solution is $\begin{bmatrix}
+x_{1}\\ x_{2}\\ x_{3}\end{bmatrix} = \begin{bmatrix} -1.55\\ -0.32\\ 0.95\end{bmatrix}$.
