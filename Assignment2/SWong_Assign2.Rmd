@@ -1,0 +1,206 @@
+---
+title: "Data 605 HW2: Trace, Determinant, Factorization"
+author: "Sin Ying Wong"
+date: "09/06/2020"
+output:
+  rmdformats::readthedown:
+    code_folding: hide
+    df_print: paged
+    highlight: tango
+    number_sections: yes
+    smooth_scroll: yes
+    theme: united
+    toc_collapsed: yes
+    toc_depth: 5
+    toc_float: yes
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+  pdf_document:
+    extra_dependencies:
+    - geometry
+    - multicol
+    - multirow
+  word_document:
+    toc: yes
+    toc_depth: '5'
+theme: lumen
+number_sections: yes
+toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+Please refer to the [Assignment 2 Document](https://github.com/shirley-wong/Data-605/blob/master/Assignment2/hw2.pdf).
+
+```{r libraries, message=FALSE, warning=FALSE}
+library(tidyr)
+library(dplyr)
+library(pracma)
+```
+
+# Problem Set 1
+
+(1) Show that $A^{T}A \neq AA^{T}$ in general. (Proof and demonstration.)
+(2) For a special type of square matrix A, we get $A^{T}A = AA^{T}$ . Under what conditions
+could this be true? (Hint: The Identity matrix I is an example of such a matrix).
+
+Please typeset your response using LaTeX mode in RStudio. If you do it in paper, please
+either scan or take a picture of the work and submit it. Please ensure that your image is
+legible and that your submissions are named using your first initial, last name, assignment
+and problem set within the assignment. E.g. LFulton_Assignment2_PS1.png
+
+## Part(1)
+Q: Show that $A^{T}A \neq AA^{T}$ in general. (Proof and demonstration.)
+
+### Proof
+A: Suppose a matrix $A$ is an $m \times n$ matrix and a matrix $B$ is an $n \times p$ matrix. Let vectors $A_{1}, A_{2}, A_{3},...,A_{n}$ denote the columns of $A$ and let the vectors $B_{1}, B_{2}, B_{3},...,B_{p}$ denote the columns of $B$. 
+
+Then for $1\leq i\leq m, 1\leq j\leq p$, the individual entries of $AB$ are:
+
+
+$$[AB]_{ij} = [AB_{j}]_{i}$$
+$$= [ [B_{j}]_{1}A_{1} + [B_{j}]_{2}A_{2} + \cdots + [B_{j}]_{n}A_{n} ]_{i}$$
+$$= [ [B_{j}]_{1}A_{1}]_{i} + [[B_{j}]_{2}A_{2}]_{i} + \cdots + [[B_{j}]_{n}A_{n} ]_{i}$$
+$$= [B_{j}]_{1}[A_{1}]_{i} + [B_{j}]_{2}[A_{2}]_{i} + \cdots + [B_{j}]_{n}[A_{n}]_{i}$$
+$$= [B_{1j}][A]_{i1} + [B_{2j}][A]_{i2} + \cdots + [B_{nj}][A]_{in} $$
+$$= [A_{i1}][B]_{1j} + [A_{i2}][B]_{2j} + \cdots + [A_{in}][B]_{nj}$$
+$$= \sum_{k=1}^{n} [A]_{ik}[B]_{kj}$$
+
+Base on the proof above, suppose the matrix $A$ is an $m \times  n$ matrix, which implies that $A^{T}$ is an $n \times m$ matrix. Then for $1\leq i\leq m, 1\leq j\leq m$, the individual entries of $AA^{T}$ are given by 
+$$[AA^{T}]_{ij} = [A]_{i1}[A^{T}]_{1j} + [A]_{i2}[A^{T}]_{2j} + [A]_{i3}[A^{T}]_{3j} + \cdots + [A]_{in}[A^{T}]_{nj}$$
+$$= \sum_{k=1}^{n} [A]_{ik}[A^{T}]_{kj}$$
+
+
+And for $1\leq i\leq n, 1\leq j\leq n$, the individual entries of $A^{T}A$ are given by 
+$$[A^{T}A]_{ij} = [A^{T}]_{i1}[A]_{1j} + [A^{T}]_{i2}[A]_{2j} + [A^{T}]_{i3}[A]_{3j} + \cdots + [A^{T}]_{im}[A]_{mj}$$
+$$= \sum_{k=1}^{m} [A^{T}]_{ik}[A]_{kj}$$
+, where $AA^{T}$ is an $m \times m$ matrix and $A^{T}A$ is an $n \times n$ matrix.
+
+Therefore, $A^{T}A \neq AA^{T}$ in general.
+
+
+### Demonstration
+Let $A = \begin{bmatrix} 1 & 4\\ 2 & 5\\ 3 & 6\end{bmatrix}$ and $A^{T} = \begin{bmatrix} 1 & 3 & 5\\ 2 & 4 & 6\end{bmatrix}$, and calculate $A^{T}A$ and $AA^{T}$.
+
+
+```{r Q1p1}
+A <- matrix(c(1,2,3,4,5,6), nrow=3, ncol=2)
+A
+A_t <- t(A)
+A_t
+
+A_t%*%A
+
+A%*%A_t
+```
+
+By the calculation above, we have $A^{T}A = \begin{bmatrix} 14 & 32\\ 32 & 77\end{bmatrix}$ and $AA^{T} = \begin{bmatrix} 17 & 22 & 27\\ 22 & 29 & 36\\ 27 & 36 & 45\end{bmatrix}$, which shows that $A^{T}A \neq AA^{T}$ in general.
+
+
+
+## Part(2)
+Q: For a special type of square matrix A, we get $A^{T}A = AA^{T}$ . Under what conditions
+could this be true? (Hint: The Identity matrix I is an example of such a matrix).
+
+A: Based on the proof in Part(1), we have two equations:
+$$[A^{T}A]_{ij} = \sum_{k=1}^{m} [A^{T}]_{ik}[A]_{kj}$$
+$$[AA^{T}]_{ij} = \sum_{k=1}^{n} [A]_{ik}[A^{T}]_{kj}$$
+
+In order to have $A^{T}A = AA^{T}$, we need $m=n$ and $A = A^{T}$, which implies $A$ has to be a symmetric matrix.
+
+
+# Problem Set 2
+
+Matrix factorization is a very important problem. There are supercomputers built just
+to do matrix factorizations. Every second you are on an airplane, matrices are being
+factorized. Radars that track flights use a technique called Kalman filtering. At the heart
+of Kalman Filtering is a Matrix Factorization operation. Kalman Filters are solving linear
+systems of equations when they track your flight using radars.
+
+Write an R function to factorize a square matrix A into LU or LDU, whichever you
+prefer. Please submit your response in an R Markdown document using our class naming
+convention, E.g. LFulton_Assignment2_PS2.png
+
+You don't have to worry about permuting rows of A and you can assume that A is less
+than 5x5, if you need to hard-code any variables in your code. If you doing the entire
+assignment in R, then please submit only one markdown document for both the problems.
+
+## LDU Decomposition
+
+To create a function for LDU decomposition, we have a few steps to do.
+
+1. Find the dimension of the given matrix $A$ ($m \times n$ matrix) and make sure it is a square matrix, i.e. m=n.
+2. Initialize the three square matrices $L$, $D$, and $U$.
+3. Do row operations on $A$ to find $L$. The matrix $A$ here will become an upper-triangular matrix while $L$ is a lower-triangular matrix.
+4. Continue to do row operations on $A$ to find $D$, a diagonal matrix, and $U$, an upper triangular matrix.
+5. Verify my function LDU by multiplying the matrices $L$, $D$, and $U$ and see if it equals to the original matrix $A$.
+
+### LDU Decomposition Function
+```{r LDU}
+LDU <- function(a){
+  A <- a
+  if (nrow(A) != ncol(A)){
+    p <- ("Your matrix is not eligible for LDU Decomposition. Please input a square matrix.")
+    return(p)
+  }
+  else{
+    #initialize the three matrices L, D, and U
+    L <- diag(nrow(A))
+    D <- diag(nrow(A))
+    U <- diag(nrow(A))
+    
+    #row operations on A to reduce A into an upper-triangular matrix and find L
+    for (n in 1:ncol(A)){
+      for (m in 2:nrow(A)){
+        if (m > n){
+          L[m,n] <- A[m,n]/A[n,n]
+          A[m,] <- A[m,] - A[m,n]/A[n,n]*A[n,]
+        }
+      }
+    }
+    
+    #row operations on the upper-triangular matrix A to find D and U
+    for (n in 1:ncol(A)){
+      for (m in 1:nrow(A)){
+        if (m == n){
+          D[m,n] = A[m,n]
+          A[m,] = A[m,]/A[m,n]
+        }
+      }
+    }
+    
+    #the A after all operations is indeed U
+    U <- A
+    
+    return(list('A'=a, 'L'=round(L,3), 'D'=round(D,3), 'U'=round(U,3), 'LDU'=round((L%*%D%*%U),3), 'A equals LDU' = all((round(a,3)==round(L%*%D%*%U,3)))))
+  }
+}
+
+
+```
+
+### Test the function
+
+1. Test with a 3x2 matrix $A = \begin{bmatrix} 3 & 10\\ 8 & -3\\ -1 & 2\end{bmatrix}$
+```{r test_LDU_3x2}
+A <- matrix(c(3,10,8,-3,-1,-2), nrow=3, ncol=2, byrow=TRUE)
+LDU(A)
+```
+
+2. Test with a 3x3 matrix $A = \begin{bmatrix} 3 & 10 & 7\\ 8 & -3 & 5\\ -1 & -2 & 4\end{bmatrix}$
+```{r test_LDU_3x3}
+A <- matrix(c(3,10,7,8,-3,5,-1,-2,4), nrow=3, ncol=3, byrow=TRUE)
+LDU(A)
+```
+
+
+3. Test with a 6x6 matrix $A = \begin{bmatrix}3 & -9 & -13 & 22 & 18 & -24\\ -25 & 21 & -12 & -7 & 23 & -27\\ 12 & -24 & 27 & -8 & 24 & 16\\ 9 & -4 & -9 & 17 & 26 & -22\\ 21 & -29 & 11 & -30 & 10 & -31\\ -21 & 3 & 26 & -14 & 37 & 19\end{bmatrix}$
+```{r test_LDU_6x6}
+A <- matrix(c(3,-9,-13,22,18,-24,-25,21,-12,-7,23,-27,12,-24,27,-8,24,16,9,-4,-9,17,26,-22,21,-29,11,-30,10,-31,-21,3,26,-14,37,19), nrow=6, ncol=6, byrow=TRUE)
+LDU(A)
+```
