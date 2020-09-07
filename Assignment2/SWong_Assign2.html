@@ -4010,6 +4010,8 @@ $(document).ready(function () {
 <p>You don’t have to worry about permuting rows of A and you can assume that A is less than 5x5, if you need to hard-code any variables in your code. If you doing the entire assignment in R, then please submit only one markdown document for both the problems.</p>
 <div id="ldu-decomposition" class="section level2">
 <h2><span class="header-section-number">2.1</span> LDU Decomposition</h2>
+<div id="ldu-decomposition-function" class="section level3">
+<h3><span class="header-section-number">2.1.1</span> LDU Decomposition Function</h3>
 <p>To create a function for LDU decomposition, we have a few steps to do.</p>
 <ol style="list-style-type: decimal">
 <li>Find the dimension of the given matrix <span class="math inline">\(A\)</span> (<span class="math inline">\(m \times n\)</span> matrix) and make sure it is a square matrix, i.e. m=n.</li>
@@ -4018,8 +4020,6 @@ $(document).ready(function () {
 <li>Continue to do row operations on <span class="math inline">\(A\)</span> to find <span class="math inline">\(D\)</span>, a diagonal matrix, and <span class="math inline">\(U\)</span>, an upper triangular matrix.</li>
 <li>Verify my function LDU by multiplying the matrices <span class="math inline">\(L\)</span>, <span class="math inline">\(D\)</span>, and <span class="math inline">\(U\)</span> and see if it equals to the original matrix <span class="math inline">\(A\)</span>.</li>
 </ol>
-<div id="ldu-decomposition-function" class="section level3">
-<h3><span class="header-section-number">2.1.1</span> LDU Decomposition Function</h3>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1">LDU &lt;-<span class="st"> </span><span class="cf">function</span>(a){</a>
 <a class="sourceLine" id="cb10-2" title="2">  A &lt;-<span class="st"> </span>a</a>
 <a class="sourceLine" id="cb10-3" title="3">  <span class="cf">if</span> (<span class="kw">nrow</span>(A) <span class="op">!=</span><span class="st"> </span><span class="kw">ncol</span>(A)){</a>

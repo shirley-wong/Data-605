@@ -132,6 +132,7 @@ assignment in R, then please submit only one markdown document for both the prob
 
 ## LDU Decomposition
 
+### LDU Decomposition Function
 To create a function for LDU decomposition, we have a few steps to do.
 
 1. Find the dimension of the given matrix $A$ ($m \times n$ matrix) and make sure it is a square matrix, i.e. m=n.
@@ -140,7 +141,6 @@ To create a function for LDU decomposition, we have a few steps to do.
 4. Continue to do row operations on $A$ to find $D$, a diagonal matrix, and $U$, an upper triangular matrix.
 5. Verify my function LDU by multiplying the matrices $L$, $D$, and $U$ and see if it equals to the original matrix $A$.
 
-### LDU Decomposition Function
 ```{r LDU}
 LDU <- function(a){
   A <- a
