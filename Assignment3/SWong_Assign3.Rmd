@@ -86,7 +86,7 @@ Both of the two methods show that the rank of matrix $A$ is 4.
 
 **A:** By the definition, the rank of a matrix is defined as the maximum number of linearly independent column vectors in the matrix, or the maximum number of linearly independent row vectors in the matrix, which is the number of pivots in the rref form of the matrix.
 
-If the matrix is non-zero, the maximum rank is the smaller value between the number of rows and the number of columns of the matrix. Given $m>n$, the maximum rank would be $n$.
+If the matrix is non-zero, the maximum rank is the smaller value between the number of rows and the number of columns of the matrix. Given $m>n$, the maximum rank would be $min(m,n) =n$.
 
 If the matrix is non-zero, there will be at least one linearly independent column vector or at least one linearly independent row vector in the matrix. Therefore, the minimum rank would be **1**.
 

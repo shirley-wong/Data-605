@@ -3985,7 +3985,7 @@ $(document).ready(function () {
 <h2><span class="header-section-number">1.2</span> Part(2)</h2>
 <p><strong>Q:</strong> Given an <span class="math inline">\(m \times n\)</span> matrix where <span class="math inline">\(m&gt;n\)</span>, what can be the maximum rank? The minimum rank, assuming that the matrix is non-zero?</p>
 <p><strong>A:</strong> By the definition, the rank of a matrix is defined as the maximum number of linearly independent column vectors in the matrix, or the maximum number of linearly independent row vectors in the matrix, which is the number of pivots in the rref form of the matrix.</p>
-<p>If the matrix is non-zero, the maximum rank is the smaller value between the number of rows and the number of columns of the matrix. Given <span class="math inline">\(m&gt;n\)</span>, the maximum rank would be <span class="math inline">\(n\)</span>.</p>
+<p>If the matrix is non-zero, the maximum rank is the smaller value between the number of rows and the number of columns of the matrix. Given <span class="math inline">\(m&gt;n\)</span>, the maximum rank would be <span class="math inline">\(min(m,n) =n\)</span>.</p>
 <p>If the matrix is non-zero, there will be at least one linearly independent column vector or at least one linearly independent row vector in the matrix. Therefore, the minimum rank would be <strong>1</strong>.</p>
 </div>
 <div id="part3" class="section level2">
