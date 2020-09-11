@@ -1,0 +1,238 @@
+---
+title: "Data 605 HW3: Eigenvalues, Eigenvectors"
+author: "Sin Ying Wong"
+date: "09/10/2020"
+output:
+  rmdformats::readthedown:
+    code_folding: hide
+    df_print: paged
+    highlight: tango
+    number_sections: yes
+    smooth_scroll: yes
+    theme: united
+    toc_collapsed: yes
+    toc_depth: 5
+    toc_float: yes
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+  pdf_document:
+    extra_dependencies:
+    - geometry
+    - multicol
+    - multirow
+  word_document:
+    toc: yes
+    toc_depth: '5'
+theme: lumen
+number_sections: yes
+toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+Please refer to the [Assignment 3 Document](https://github.com/shirley-wong/Data-605/blob/master/Assignment3/hw3.pdf).
+
+```{r libraries, message=FALSE, warning=FALSE}
+library(tidyr)
+library(dplyr)
+library(pracma)
+library(Matrix)
+```
+
+# Problem Set 1
+
+(1) What is the rank of the matrix $A$?
+$$A = \begin{bmatrix} 1 & 2 & 3 & 4\\ -1 & 0 & 1 & 3\\ 0 & 1 & -2 & 1\\ 5 & 4 & -2 & -3\end{bmatrix}$$
+(2) Given an $m \times n$ matrix where $m>n$, what can be the maximum rank? The minimum rank, assuming that the matrix is non-zero?
+
+(3) What is the rank of matrix $B$?
+$$B = \begin{bmatrix} 1 & 2 & 1\\ 3 & 6 & 3\\ 2 & 4 & 2\end{bmatrix}$$
+
+## Part(1)
+**Q:** What is the rank of the matrix $A$?
+$$A = \begin{bmatrix} 1 & 2 & 3 & 4\\ -1 & 0 & 1 & 3\\ 0 & 1 & -2 & 1\\ 5 & 4 & -2 & -3\end{bmatrix}$$
+
+**A:** By the definition, the rank of a matrix is defined as the maximum number of linearly independent column vectors in the matrix, or the maximum number of linearly independent row vectors in the matrix, which is the number of pivots in the rref form of the matrix.
+
+I will find the rank of matrix $A$ by calculating the number of pivots in the rref form of the matrix, and use the `rankMatrix` function from the `Matrix` package to verify my answer.
+
+```{r Q1p1, message=FALSE, warning=FALSE}
+A <- matrix(c(1,2,3,4,-1,0,1,3,0,1,-2,1,5,4,-2,-3), nrow=4, ncol=4, byrow=TRUE)
+
+#number of pivots in the rref form of any matrix A
+i=0
+for (m in 1:pmin(nrow(A),ncol(A))){
+  if (rref(A)[m,m] != 0){
+    i=i+1
+    }
+}
+i
+
+#using Matrix package
+rankMatrix(A)[1]
+
+```
+
+Both of the two methods show that the rank of matrix $A$ is 4.
+
+
+## Part(2)
+**Q:** Given an $m \times n$ matrix where $m>n$, what can be the maximum rank? The minimum rank, assuming that the matrix is non-zero?
+
+**A:** By the definition, the rank of a matrix is defined as the maximum number of linearly independent column vectors in the matrix, or the maximum number of linearly independent row vectors in the matrix, which is the number of pivots in the rref form of the matrix.
+
+If the matrix is non-zero, the maximum rank is the smaller value between the number of rows and the number of columns of the matrix. Given $m>n$, the maximum rank would be $n$.
+
+If the matrix is non-zero, there will be at least one linearly independent column vector or at least one linearly independent row vector in the matrix. Therefore, the minimum rank would be **1**.
+
+## Part(3)
+**Q:** What is the rank of matrix $B$?
+$$B = \begin{bmatrix} 1 & 2 & 1\\ 3 & 6 & 3\\ 2 & 4 & 2\end{bmatrix}$$
+
+**A:** By the definition, the rank of a matrix is defined as the maximum number of linearly independent column vectors in the matrix, or the maximum number of linearly independent row vectors in the matrix, which is the number of pivots in the rref form of the matrix.
+
+By looking at the matrix, it is obvious that Row2 is 3 times Row1, and Row3 is 2 times Row1. It is also obvious that Col1=Col3 and Col2 is 2 times Col1. i.e. There is only one linearly independent column/row vector, which proves that the rank of matrix $B$ is **1**.
+
+I will also find the rank of matrix $B$ by calculating the number of pivots in the rref form of the matrix, and use the `rankMatrix` function from the `Matrix` package to verify my answer.
+
+```{r Q1p3}
+B <- matrix(c(1,2,1,3,6,3,2,4,2), nrow=3, ncol=3, byrow=TRUE)
+
+#number of pivots in the rref form of any matrix B
+i=0
+for (m in 1:pmin(nrow(B),ncol(B))){
+  if (rref(B)[m,m] != 0){
+    i=i+1
+    }
+}
+i
+
+#using Matrix package
+rankMatrix(B)[1]
+
+```
+
+By definition and also by using the two methods above, the rank of matrix $B$ is **1**.
+
+
+# Problem Set 2
+
+Compute the eigenvalues and eigenvectors of the matrix A. You'll need to show your work. You'll need to write out the characteristic polynomial and show your solution.
+$$A = \begin{bmatrix} 1 & 2 & 3\\ 0 & 4 & 5\\ 0 & 0 & 6\end{bmatrix}$$
+
+Please show your work using an R-markdown document. Please name your assignment submission with your first initial and last name.
+
+
+## Characteristic Polynomial
+By definition, suppose that $A$ is a square matrix of size $n$, $\vec{x} \neq 0$ is a vector in $\mathbb{C}^{n}$, and $\lambda$ is a scalar in $\mathbb{C}$, then we say $\vec{x}$ is an eigenvector of $A$ with eigenvalue $\lambda$ if $A\vec{x}=\lambda \vec{x}$ and $det(\lambda I_{n} -A)=0$.
+
+Solving the equation $det(\lambda I_{3}-A)=0$ with $A = \begin{bmatrix} 1 & 2 & 3\\ 0 & 4 & 5\\ 0 & 0 & 6\end{bmatrix}$ :
+
+$$\lambda I_{3}-A = \begin{bmatrix} \lambda -1 & -2 & -3\\ 0 & \lambda -4 & -5\\ 0 & 0 & \lambda -6 \end{bmatrix}$$
+$$det(\lambda I_{3}-A) = (\lambda-1)(\lambda-4)(\lambda-6)+0+0-0-0-0 = 0$$ 
+$$= \lambda^{3} - 11\lambda^{2} +34\lambda -24$$
+
+
+
+Therefore, the characteristic polynomial of matrix $A$ is $p_{A}(x) = x^{3} - 11x^{2} +34x -24$.
+
+
+## Eigenvalues & Algebraic Multiplicities
+
+From the above calculation, we have 
+$$det(\lambda I_{3}-A) = (\lambda-1)(\lambda-4)(\lambda-6) = 0$$
+$$\lambda = \left\{\begin{matrix}1\\ 4\\ 6\end{matrix}\right.$$
+
+Therefore, there are 3 eigenvalues of matrix $A$ and they are **1, 4, and 6**.
+
+Verify the result by using `eigen` function from `Matrix` package:
+```{r Q2p2}
+A <- matrix(c(1,2,3,0,4,5,0,0,6), nrow=3, ncol=3, byrow=TRUE)
+A
+eigen(A)$values
+```
+
+The algebraic multiplicities of all three lambda values $1, 4, 6$ are 1: 
+$$\alpha_{A}(1) = \alpha_{A}(4) = \alpha_{A}(6) = 1$$
+
+
+## Eigenvectors & Geometric Multiplicities
+
+Each eigenvalue has its corresponding eigenvector. We can find the corresponding eigenvector by solving the equation $(\lambda I_{n}-A)\vec{v}=0$ with each eigenvalue.
+
+### lambda = 1
+
+For $\lambda=1$, 
+$$(\lambda I_{3}-A) = \begin{bmatrix} \lambda -1 & -2 & -3\\ 0 & \lambda -4 & -5\\ 0 & 0 & \lambda -6 \end{bmatrix}= \begin{bmatrix} 0 & -2 & -3\\ 0 & -3 & -5\\ 0 & 0 & -5 \end{bmatrix}$$
+$$ \rightarrow \begin{bmatrix} 0 & 1 & 3/2\\ 0 & 1 & 5/3\\ 0 & 0 & 1 \end{bmatrix} \rightarrow \begin{bmatrix} 0 & 1 & 3/2\\ 0 & 0 & 1/6\\ 0 & 0 & 1 \end{bmatrix} \rightarrow \begin{bmatrix} 0 & 1 & 0\\ 0 & 0 & 1\\ 0 & 0 & 0 \end{bmatrix}$$
+so,
+$$\begin{bmatrix} 0 & 1 & 0\\ 0 & 0 & 1\\ 0 & 0 & 0 \end{bmatrix} \begin{bmatrix} v_{1}\\v_{2}\\v_{3}\end{bmatrix} = \begin{bmatrix} 0\\0\\0\end{bmatrix}$$
+$$v_{1} = t \mid t\in R, v_{2} = 0, v_{3} = 0$$
+$$\vec v_{\lambda = 1}=\begin{bmatrix} 1\\0\\0\end{bmatrix}$$
+
+Verify my eigenvector by using R function. The eigenvector of $\lambda =1$ is shown in the 3rd column.
+```{r Q2p3_1}
+eigen(A)
+eigen(A)$vectors[,3]
+```
+
+
+
+$$E_{1} = \begin{Bmatrix}\begin{bmatrix} v_{1}\\v_{2}\\v_{3}\end{bmatrix} = t\begin{bmatrix} 1\\0\\0\end{bmatrix}\mid t\in R\end{Bmatrix}$$
+
+Therefore, for eigenvalue $\lambda = 1$, its corresponding eigenvector is $\vec v_{\lambda = 1}=\begin{bmatrix} 1\\0\\0\end{bmatrix}$ and the eigenspace is $E_{1} = \begin{Bmatrix}\begin{bmatrix} v_{1}\\v_{2}\\v_{3}\end{bmatrix} = t\begin{bmatrix} 1\\0\\0\end{bmatrix}\mid t\in R\end{Bmatrix}$.
+
+The geometric multiplicity of $\lambda = 1$ is 1, i.e. $\gamma_{A}(1) = 1$.
+
+
+### lambda = 4
+
+For $\lambda=4$, 
+$$(\lambda I_{3}-A) = \begin{bmatrix} \lambda -1 & -2 & -3\\ 0 & \lambda -4 & -5\\ 0 & 0 & \lambda -6 \end{bmatrix}= \begin{bmatrix} 3 & -2 & -3\\ 0 & 0 & -5\\ 0 & 0 & -2 \end{bmatrix}$$
+$$ \rightarrow \begin{bmatrix} 3 & -2 & -3\\ 0 & 0 & -5\\ 0 & 0 & -2 \end{bmatrix} \rightarrow \begin{bmatrix} 1 & -2/3 & -1\\ 0 & 0 & 1\\ 0 & 0 & 0 \end{bmatrix} \rightarrow \begin{bmatrix} 1 & -2/3 & 0\\ 0 & 0 & 1\\ 0 & 0 & 0 \end{bmatrix}$$
+so,
+$$\begin{bmatrix} 1 & -2/3 & 0\\ 0 & 0 & 1\\ 0 & 0 & 0 \end{bmatrix} \begin{bmatrix} v_{1}\\v_{2}\\v_{3}\end{bmatrix} = \begin{bmatrix} 0\\0\\0\end{bmatrix}$$
+$$v_{1} = \frac{2}{3} v_{2} = t \mid t\in R,  v_{3} = 0$$
+$$\vec v_{\lambda = 4}=\begin{bmatrix} 1\\1.5\\0\end{bmatrix}$$
+
+Verify my eigenvector by using R function. The eigenvector of $\lambda =4$ is shown in the 2nd column.
+```{r Q2p3_2}
+eigen(A)
+eigen(A)$vectors[,2]/0.5547002
+```
+
+
+$$E_{4} = \begin{Bmatrix}\begin{bmatrix} v_{1}\\v_{2}\\v_{3}\end{bmatrix} = t\begin{bmatrix} 1\\1.5\\0\end{bmatrix}\mid t\in R\end{Bmatrix}$$
+
+Therefore, for eigenvalue $\lambda = 4$, its corresponding eigenvector is $\vec v_{\lambda = 4}=\begin{bmatrix} 1\\1.5\\0\end{bmatrix}$ and the eigenspace is $E_{4} = \begin{Bmatrix}\begin{bmatrix} v_{1}\\v_{2}\\v_{3}\end{bmatrix} = t\begin{bmatrix} 1\\1.5\\0\end{bmatrix}\mid t\in R\end{Bmatrix}$.
+
+The geometric multiplicity of $\lambda = 4$ is 1, i.e. $\gamma_{A}(4) = 1$.
+
+### lambda = 6
+
+For $\lambda=6$, 
+$$(\lambda I_{3}-A) = \begin{bmatrix} \lambda -1 & -2 & -3\\ 0 & \lambda -4 & -5\\ 0 & 0 & \lambda -6 \end{bmatrix}= \begin{bmatrix} 5 & -2 & -3\\ 0 & 2 & -5\\ 0 & 0 & 0 \end{bmatrix}$$
+$$ \rightarrow \begin{bmatrix} 5 & -2 & -3\\ 0 & 2 & -5\\ 0 & 0 & 0 \end{bmatrix} \rightarrow \begin{bmatrix} 5 & 0 & -8\\ 0 & 2 & -5\\ 0 & 0 & 0 \end{bmatrix} \rightarrow \begin{bmatrix} 1 & 0 & -8/5\\0  & 1 & -5/2\\ 0 & 0 & 0 \end{bmatrix}$$
+so,
+$$\begin{bmatrix} 1 & 0 & -8/5\\0  & 1 & -5/2\\ 0 & 0 & 0 \end{bmatrix} \begin{bmatrix} v_{1}\\v_{2}\\v_{3}\end{bmatrix} = \begin{bmatrix} 0\\0\\0\end{bmatrix}$$
+$$v_{1} = \frac{8}{5} v_{3}, v_{2} =  \frac{5}{2} v_{3},v_{3} = t \mid t\in R$$
+$$\vec v_{\lambda = 6}=\begin{bmatrix} 1.6\\2.5\\1\end{bmatrix}$$
+
+Verify my eigenvector by using R function. The eigenvector of $\lambda =6$ is shown in the 1st column.
+```{r Q2p3_3}
+eigen(A)
+eigen(A)$vectors[,1]/0.3192754
+```
+
+$$E_{6} = \begin{Bmatrix}\begin{bmatrix} v_{1}\\v_{2}\\v_{3}\end{bmatrix} = t\begin{bmatrix} 1.6\\2.5\\1\end{bmatrix}\mid t\in R\end{Bmatrix}$$
+
+Therefore, for eigenvalue $\lambda = 6$, its corresponding eigenvector is $\vec v_{\lambda = 6}=\begin{bmatrix} 1.6\\2.5\\1\end{bmatrix}$ and the eigenspace is $E_{6} = \begin{Bmatrix}\begin{bmatrix} v_{1}\\v_{2}\\v_{3}\end{bmatrix} = t\begin{bmatrix} 1.6\\2.5\\1\end{bmatrix}\mid t\in R\end{Bmatrix}$.
+
+The geometric multiplicity of $\lambda = 6$ is 1, i.e. $\gamma_{A}(6) = 1$.
+
+
