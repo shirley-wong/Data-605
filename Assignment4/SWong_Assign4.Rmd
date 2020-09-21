@@ -1,0 +1,404 @@
+---
+title: "Data 605 HW4: Linear Transformations, Representations"
+author: "Sin Ying Wong"
+date: "09/18/2020"
+output:
+  rmdformats::readthedown:
+    code_folding: hide
+    df_print: paged
+    highlight: tango
+    number_sections: yes
+    smooth_scroll: yes
+    theme: united
+    toc_collapsed: yes
+    toc_depth: 5
+    toc_float: yes
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+  pdf_document:
+    extra_dependencies:
+    - geometry
+    - multicol
+    - multirow
+  word_document:
+    toc: yes
+    toc_depth: '5'
+theme: lumen
+number_sections: yes
+toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+Please refer to the [Assignment 4 Document](https://github.com/shirley-wong/Data-605/blob/master/Assignment4/hw4.pdf).
+
+```{r libraries, message=FALSE, warning=FALSE}
+library(tidyr)
+library(dplyr)
+library(pracma)
+library(Matrix)
+library(matlib)
+```
+
+# Problem Set 1
+
+In this problem, we'll verify using R that SVD and Eigenvalues are related as worked out in the weekly module.  Given a $2 \times 3$ matrix $A$
+$$A = \begin{bmatrix} 1 & 2 & 3 \\ -1 & 0 & 4 \end{bmatrix} $$
+
+Write code in R to compute $X = AA^{T}$ and $Y = A^{T}A$.  Then, compute the eigenvalues and eigenvectors of X and Y using the built-in commans in R.
+
+Then, compute the left-singular, singular values, and right-singular vectors of $A$ using the `svd` command.  Examine the two sets of singular vectors and show that they are indeed eigenvectors of $X$ and $Y$.  In addition, the two non-zero eigenvalues (the 3rd value will be very close to zero, if not zero) of both $X$ and $Y$ are the same and are squares of the non-zero singular values of $A$.
+
+Your code should compute all these vectors and scalars and store them in variables.  Please add enough comments in your code to show me how to interpret your steps.
+
+## X and Y
+
+Given the $2\times3$ matrix $A$, we have $X$ as a $2\times2$ matrix and $Y$ as a $3\times3$ matrix. 
+
+```{r Q1p1, message=FALSE, warning=FALSE}
+A <- matrix(c(1,2,3,-1,0,4), nrow=2, ncol=3, byrow=TRUE)
+
+X <- A %*% t(A)
+X
+eigen(X)  #show the X eigenvalues and eigenvectors all at once
+X_evalues <- eigen(X)$values  #store the X eigenvalues in X_evalues
+X_evectors <- eigen(X)$vectors  #store the X eigenvectors in X_evectors
+
+Y <- t(A) %*% A
+Y
+eigen(Y)  #show the Y eigenvalues and eigenvectors all at once
+Y_evalues <- eigen(Y)$values  #store the Y eigenvalues in Y_evalues
+Y_evectors <- eigen(Y)$vectors  #store the Y eigenvectors in Y_evectors
+```
+
+By the above calculations, we can see that:
+
+$X$ is a $2\times2$ matrix $\begin{bmatrix} 14 & 11\\ 11 & 17\end{bmatrix}$ with 2 eigenvalues $26.602$ and $4.398$ and their corresponding eigenvectors $\begin{bmatrix} 0.6576043\\0.7533635\end{bmatrix}$ and $\begin{bmatrix} -0.7533635\\0.6576043\end{bmatrix}$.
+
+$Y$ is a $3\times3$ matrix $\begin{bmatrix} 2 & 2 & -1 \\ 2 & 4 & 6\\ -1 & 6 & 25\end{bmatrix}$ with 3 eigenvalues $26.602$, $4.398$, and $0$, and their corresponding eigenvectors $\begin{bmatrix} -0.01856629\\0.25499937\\0.96676296\end{bmatrix}$, $\begin{bmatrix} -0.6727903\\-0.7184510\\0.1765824\end{bmatrix}$, and $\begin{bmatrix} 0.7396003\\-0.6471502\\0.1849001\end{bmatrix}$.
+
+## SVD of A
+
+Let's compute the left-singular, singular values, and right-singular vectors of $A$ using the `svd` command.
+
+```{r Q1p2s1, message=FALSE, warning=FALSE}
+svd(A, nu=nrow(A), nv=ncol(A))
+u <- as.matrix(svd(A, nu=nrow(A), nv=ncol(A))$u)
+v <- as.matrix(svd(A, nu=nrow(A), nv=ncol(A))$v)
+```
+
+As we can see, the matrix $D$ is a $3\times3$ matrix.  To get the correct dimensions for multiplication, we need to add a blank column to D.
+
+```{r Q1p2s2, message=FALSE, warning=FALSE}
+d <- as.matrix(cbind(diag(svd(A)$d),0))
+d
+```
+
+To check if our matrices are correct, compare the multiplication result with our matrix $A$ by using the equation $A=U\times \Sigma \times V^{T}$.
+```{r Q1p2s3, message=FALSE, warning=FALSE}
+all(round(u%*%d%*%t(v),4) == A)
+```
+
+Therefore, we have the left-singular, singular values, and right-singular vectors of $A$ be:
+$$U = \begin{bmatrix} -0.6576043 & -0.7533635 \\ -0.7533635 & 0.6576043 \end{bmatrix} $$
+$$D = \begin{bmatrix} 5.157693 & 0 & 0\\ 0 & 2.097188 & 0\end{bmatrix} $$
+$$V = \begin{bmatrix} 0.01856629 & -0.6727903 & -0.7396003 \\ -0.25499937 & -0.7184510 & 0.6471502\\ -0.96676296 & 0.1765824 & -0.1849001\end{bmatrix} $$
+
+## Examine X & Y with A
+
+I will examine the two sets of singular vectors and show that they are indeed eigenvectors of $X$ and $Y$. I will also show that the two non-zero eigenvalues of both $X$ and $Y$ are the same and are squares of the non-zero singular values of $A$.
+
+### U vs X
+
+First, I will compare the left-singular vectors of $A$ in $U$ with the eigenvectors of $X$. 
+
+By observation, the first eigenvector of $X$ has opposite sign of the first singular vector in $U$, thus I will multiply the first eigenvector of $X$ by $-1$ and compare the resulting matrix `X_evectors` with matrix $U$. 
+
+Note that, multiplying the first eigenvector of $X$ by a **scalar** will not affect the comparison with the singular vectors in $U$ as the modified eigenvector will still be in its original span.
+
+```{r Q1p3s1, message=FALSE, warning=FALSE}
+# Take a look at the left-singular vectors of A in U
+u
+
+# Take a look at the eigenvectors of X
+X_evectors
+
+# Multiply the first eigenvector of X by -1
+X_evectors[,1] <- -1*X_evectors[,1]
+X_evectors
+
+# Compare the eigenvectors of X with the left-singular vectors of A in U
+all(round(X_evectors,4) == round(u,4))
+
+```
+
+Based on the calculation above, the left-singular vectors of $A$ in matrix $U$ are indeed the eigenvectors of $X$. 
+
+### V vs Y
+
+Next, I will compare the right-singular vectors of $A$ in $V$ with the eigenvectors of $Y$. 
+
+By observation, the first and third eigenvectors of $Y$ are in the opposite sign of the first and third singular vectors in $V$, thus I will multiply the first and third eigenvectors of $Y$ by $-1$ and compare the resulting matrix `Y_evectors` with matrix $V$. 
+
+Note that, multiplying the eigenvectors by a **scalar** will not affect the comparison with the singular vectors in $V$ as the modified eigenvectors will still be in their original span.
+
+```{r Q1p3s2, message=FALSE, warning=FALSE}
+# Take a look at the right-singular vectors of A in V
+v
+
+# Take a look at the eigenvectors of Y
+Y_evectors
+
+# Multiply the first and third eigenvectors of Y by -1
+Y_evectors[,1] <- -1*Y_evectors[,1]
+Y_evectors[,3] <- -1*Y_evectors[,3]
+Y_evectors
+
+# Compare the eigenvectors of Y with the right-singular vectors of A in V
+all(round(Y_evectors,4) == round(v,4))
+
+```
+
+Based on the calculation above, the right-singular vectors of $A$ in matrix $V$ are indeed the eigenvectors of $Y$.
+
+### Singular Values vs Eigenvalues
+
+Last, I will compare the non-zero eigenvalues of $X$ and that of $Y$, show that they are the same and are the squares of the non-zero singular values of $A$.
+
+As the third eigenvalue of $Y$ is nearly zero, I will take it as zero and omit it from the below calculations. Also, by comparing the singular values and the square root of the two non-zero eigenvalues, I will get rid of the third column (all zeros) of matrix $D$.
+
+```{r Q1p3s3, message=FALSE, warning=FALSE}
+# Take a look at the eigenvalues of X
+print('Eigenvalues of X')
+X_evalues
+
+# Take a look at the non-zero eigenvalues of Y
+print('Non-zero eigenvalues of Y')
+Y_evalues[1:2]
+
+# Compare the non-zero eigenvalues of X and Y to see if they are the same
+print('Same eigenvalues?')
+all(round(X_evalues,4) == round(Y_evalues[1:2],4))
+
+# Square-root the two eigenvalues
+print('Square-root of the two non-zero eigenvalues:')
+diag(sqrt(X_evalues))
+
+# Take a look at the singular values of A in D
+print('Singular values in matrix D:')
+d
+
+# Compare the square root of the two non-zero eigenvalues with the two singular values
+print('Compare the non-zero eigenvalues with singular values, are they equal?')
+all(round(diag(sqrt(X_evalues)),4) == round(d[,1:2],4))
+
+```
+
+Thus, the non-zero eigenvalues of $X$ and $Y$ are the same and they are equal to the squares of the singular values of A.
+
+
+
+# Problem Set 2
+
+Using the procedure outlined in section 1 of the [weekly handout](https://github.com/shirley-wong/Data-605/blob/master/Assignment4/Week%204%20Lecture.pdf), write a function to compute the inverse of a well-conditioned full-rank square matrix using co-factors. In order to compute the co-factors, you may use built-in commands to compute the determinant. Your function should have the following signature:
+$$B = myinverse(A)$$
+where $A$ is a matrix and $B$ is its inverse and $A \times B = I$. The off-diagonal elements of $I$ should be close to zero, if not zero.  Likewise, the diagonal elements should be close to 1, if not 1.  Small numerical precision errors are acceptable but the function `myinverse` should be correct and must use co-factors and determinant of $A$ to compute the inverse.
+
+Please submit PS1 and PS2 in an R-markdown document with your first initial and last name.
+
+
+## General Ideas
+
+According to the Week 4 Lecture, a co-factor $C_{ij}$ is defined as the determinant of the sub-matrix $M_{ij}$ together with the appropriate sign $(-1)^{i+j}$, or $(-1)^{i+j}det(M_{ij})$, which simplifies the formula for the determinant of the matrix $A$ to:
+$$det(A) = a_{i1}C_{i1} + a_{i2}C_{i2} + a_{i3}C_{i3} + \cdots + a_{in}C_{in}$$
+where $C_{ij}$ are the co-factors, for $n$ be the dimension of the square matrix $A$ and $i$ be any row of the square matrix $A$ where $i \leq n$.
+
+Also, the inverse of a full-rank square matrix $A$ can be found by the formula $$A^{-1} = C^{T}/det(A) = \begin{bmatrix} C_{11} & \cdots & C_{n1}\\ \vdots  & \ddots  & \vdots \\ C_{1n} & \cdots & C_{nn}\end{bmatrix} / \begin{bmatrix} det(A) & \cdots & det(A)\\ \vdots  & \ddots  & \vdots \\ det(A) & \cdots & det(A)\end{bmatrix}$$
+
+We can compute the determinant of the matrix $A$ and all its co-factors, take the transpose of the co-factor matrix and divide it by the determinant of the matrix $A$ to get the inverse.
+
+## Create the function
+
+Create the function `myinverse` to find the inverse of full-rank square matrix $A$.
+
+Steps:
+
+1. Check if the input $A$ is a matrix
+
+2. Check if the input matrix $A$ is square and full-rank
+
+3. Find all submatrices $M_{ij}$
+
+4. Calculate all co-factors $C_{ij}$ by using $C_{ij} = (-1)^{i+j}det(M_{ij})$
+
+5. Get the inverse of $A$ by using $A^{-1} = C^{T}/det(A)$
+
+```{r Q2p0, message=FALSE, warning=FALSE}
+
+myinverse <- function(A){
+  
+  #check if A is (1) a matrix, (2) square, and (3) full-rank
+  if (class(A) != 'matrix')
+    return('Please input a full-rank square matrix.')
+  if ((nrow(A)!=ncol(A)) | (nrow(A)!=rankMatrix(A)[1])) #can't use det(A), error if A is not square
+    return('Please input a full-rank square matrix.')
+  
+  #initialize the dimension of the full-rank square matrix A
+  n <- nrow(A)
+  
+  #create an identity matrix with dimension n to store the cofactors below
+  cofactor <- diag(n)
+  
+  #generate all co-factors 
+  for (r in 1:n){
+    for (c in 1:n){
+      
+      #find all submatrices by removing one row and one column correspondingly
+      #in order to prevent the error of removing 1 row and 1 col from a 2x2 matrix
+      #   resulting with a single number, we have to re-define the submatrix as 'matrix'
+      #please note that, 'byrow' must be FALSE to have the correct submatrix
+      submatrix <- matrix(A[-r,-c], nrow=n-1, ncol=n-1, byrow=FALSE)
+      
+      #find all co-factors by multiplying appropriate sign to the det(submatrices)
+      cofactor[r,c] <- (-1)^(r+c) * det(submatrix)
+    }
+  }
+  
+  #return the inverse of A
+  return(t(cofactor)/det(A))
+}
+
+```
+
+## Test the function
+
+Test the `myinverse()` function with matrices with different dimensions and verify the results with the R command `solve()` and `matlib` function `inv()`.
+
+
+### A Number
+
+Test with a number $10$.
+
+```{r Q2p1, message=FALSE, warning=FALSE}
+A <- 10
+print('My input:')
+A
+print('myinverse(A) result:')
+myinverse(A)
+```
+
+
+### 1x1 matrix
+
+Test with a $1\times1$ matrix $[10]$.
+
+Note that, `myinverse()` and `solve()` can find the inverse of a $1\times1$ matrix but `inv()` cannot.
+
+```{r Q2p2, message=FALSE, warning=FALSE}
+A <- matrix(c(10), nrow=1, ncol=1)
+print('My input:')
+A
+print('myinverse(A) result:')
+myinverse(A)
+print('Verify the function using the R command solve()')
+solve(A)
+#matlib function inv() cannot take in a 1x1 matrix
+try(inv(A))
+print('Are they equal?')
+print(all(round(myinverse(A),4)==round(solve(A),4)))
+print('Check A*myinverse(A):')
+round(A%*%myinverse(A),4)
+```
+
+### 2x2 matrix
+
+Test with a $2\times2$ matrix $A = \begin{bmatrix} 1 & 2 \\ 2 & 1\end{bmatrix}$
+
+```{r Q2p3, message=FALSE, warning=FALSE}
+A <- matrix(c(1,2,2,1), nrow=2, ncol=2)
+print('My input:')
+A
+print('myinverse(A) result:')
+myinverse(A)
+print('Verify the function using the R command solve()')
+round(solve(A),4)
+print('Verify the function using the matlib function inv()')
+round(inv(A),4)
+print('Are they equal?')
+print(all(round(myinverse(A),4)==round(solve(A),4)))
+print('Check A*myinverse(A):')
+round(A%*%myinverse(A),4)
+```
+
+
+
+### 2x3 matrix
+
+Test with a $2\times3$ matrix $A = \begin{bmatrix} 1 & 2 & 3 \\ 0 & 1 & -2\end{bmatrix}$.
+
+```{r Q2p4, message=FALSE, warning=FALSE}
+A <- matrix(c(1,2,3,0,1,-2), nrow=2, ncol=3, byrow=TRUE)
+print('Input matrix A:')
+A
+print('myinverse(A) result:')
+myinverse(A)
+```
+
+### 3x3 singular matrix
+
+Test with a singular square matrix $A = \begin{bmatrix} 1 & 2 & 3 \\ 2 & 4 & 6\\ 0 & 1 & -2\end{bmatrix}$.
+
+```{r Q2p5, message=FALSE, warning=FALSE}
+A <- matrix(c(1,2,3,2,4,6,0,1,-2), nrow=3, ncol=3, byrow=TRUE)
+print('Input matrix A:')
+A
+print('myinverse(A) result:')
+myinverse(A)
+```
+
+### 4x4 matrix
+
+Test with a full-rank $4 \times 4$ matrix $A = \begin{bmatrix} 1 & 2 & 3 & 4\\ -1 & 0 & 1 & 3\\ 0 & 1 & -2 & 1\\ 5 & 4 & -2 & -3\end{bmatrix}$.
+
+```{r Q2p6, message=FALSE, warning=FALSE}
+A <- matrix(c(1,2,3,4,-1,0,1,3,0,1,-2,1,5,4,-2,-3), nrow=4, ncol=4, byrow=TRUE)
+print('Input matrix A:')
+A
+print('myinverse(A) result:')
+round(myinverse(A),4)
+print('Verify the function using the R command solve()')
+round(solve(A),4)
+print('Verify the function using the matlib function inv()')
+round(inv(A),4)
+print('Are they equal?')
+print(all(round(myinverse(A),4)==round(inv(A),4)))
+print('Check A*myinverse(A):')
+round(A%*%myinverse(A),4)
+```
+
+### 6x6 matrix
+
+Test with a $6\times6$ matrix $A = \begin{bmatrix}3 & -9 & -13 & 22 & 18 & -24\\ -25 & 21 & -12 & -7 & 23 & -27\\ 12 & -24 & 27 & -8 & 24 & 16\\ 9 & -4 & -9 & 17 & 26 & -22\\ 21 & -29 & 11 & -30 & 10 & -31\\ -21 & 3 & 26 & -14 & 37 & 19\end{bmatrix}$
+
+```{r Q2p7, message=FALSE, warning=FALSE}
+A <- matrix(c(3,-9,-13,22,18,-24,-25,21,-12,-7,23,-27,12,-24,27,-8,24,16,9,-4,-9,17,26,-22,21,-29,11,-30,10,-31,-21,3,26,-14,37,19), nrow=6, ncol=6, byrow=TRUE)
+print('Input matrix A:')
+A
+print('myinverse(A) result:')
+round(myinverse(A),4)
+print('Verify the function using the R command solve()')
+round(solve(A),4)
+print('Verify the function using the matlib function inv()')
+round(inv(A),4)
+print('Are they equal?')
+print(all(round(myinverse(A),4)==round(inv(A),4)))
+print('Check A*myinverse(A):')
+round(A%*%myinverse(A),4)
+```
+
+
