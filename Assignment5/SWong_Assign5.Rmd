@@ -1,0 +1,272 @@
+---
+title: "Data 605 HW5: Probability Distribution"
+author: "Sin Ying Wong"
+date: "09/24/2020"
+output:
+  rmdformats::readthedown:
+    code_folding: hide
+    df_print: paged
+    highlight: tango
+    number_sections: yes
+    smooth_scroll: yes
+    theme: united
+    toc_collapsed: yes
+    toc_depth: 5
+    toc_float: yes
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+  pdf_document:
+    extra_dependencies:
+    - geometry
+    - multicol
+    - multirow
+  word_document:
+    toc: yes
+    toc_depth: '5'
+theme: lumen
+number_sections: yes
+toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+Please refer to the [Assignment 5 Document](https://github.com/shirley-wong/Data-605/blob/master/Assignment5/hw5.pdf).
+
+```{r libraries, message=FALSE, warning=FALSE}
+library(tidyr)
+library(dplyr)
+```
+
+# Problem Set 1
+
+Choose independently two numbers B and C at random from the interval [0,1] with uniform density. Prove that B and C are proper probability distributions. Note that the point (B,C) is then chosen at random in the unit square.
+
+Find the probability that,
+
+(a.) $B+C < \frac{1}{2}$
+
+(b.) $BC < \frac{1}{2}$
+
+(c.) $\left | B-C \right | < \frac{1}{2}$
+
+(d.) $max \left \{ B,C \right \} < \frac{1}{2}$
+
+(e.) $min \left \{ B,C \right \} < \frac{1}{2}$
+
+
+
+## General Ideas
+
+![Def2.1 Density Functions of Continuous Random Variables from our Introduction to Probability textbook](https://raw.githubusercontent.com/shirley-wong/Data-605/master/Assignment5/Def2.1%20Density%20Functions%20of%20Continuous%20RV.PNG)
+
+## Proof
+
+By the Def2.1, let $X$ be a continuous real-valued random variable. The density function for $X$ is a real-valued function $f$ which satifies 
+$$P(a\leq X\leq b) = \int_{a}^{b}f(x)dx \; \; \; \; \; \; \;\forall a,b\in \mathbb{R}$$
+
+The general formula for the probability density function of the uniform distribution is known as 
+$$f(x)=\frac{1}{b-a} \;\;\; for \;a\leq x\leq b$$
+
+By substituting $a=0$ and $b=1$ into the above formula, we get
+
+$$P(0\leq X\leq 1) = \int_{0}^{1}f(x)dx = \int_{0}^{1}\frac{1}{1-0}dx = \int_{0}^{1}1\; dx = 1-0=1$$
+Therefore, the total probability of this density function equals to 1 and it satifies the definition of probability.
+
+
+The cumulative distribution function of $X$ by definition is $F_{X}(x)=P(X \leq x)$. Based on the above distribution formula, we have
+$$F_{X}(x) = P(X \leq x) = \int_{-\infty }^{x}f(x)dx = \int_{-\infty }^{x}1 \; dx = \left\{\begin{matrix}0, \;\;\;\;\;\;\;\;\; if\;\;\;x \leq 0\\ x, \;\;\; if\;\;0 \leq x \leq 1\\ 1, \;\;\;\;\;\;\;\;\; if \;\;\; x \leq 1\end{matrix}\right.$$
+
+Since $B$ and $C$ are independently and randomly chosen from the interval $[0,1]$, we have
+$$F_{X}(B) = P(X \leq B) =B$$
+$$F_{X}(C) = P(X \leq C) =C$$
+
+As all definitions and properties were able to apply to $B$ and $C$ and they are the cumulative distribution function of their own, I conclude that $B$ and $C$ are proper probability distributions.
+
+
+## Solve (a)
+
+$P(B+C < \frac{1}{2})$
+
+![Graph 1a](https://raw.githubusercontent.com/shirley-wong/Data-605/master/Assignment5/graph%201a.PNG)
+
+Given that the point (B,C) is chosen at random in the unit square, let $x$ be $B$ and $y$ be $C$, we have
+
+
+$$P(x+y<\frac{1}{2})$$
+$$= P(y < \frac{1}{2}-x)$$
+$$=\int_{0}^{1/2} \int_{0}^{1/2-x} f(x,y) \;dy\,dx$$
+$$=\int_{0}^{1/2} \int_{0}^{1/2-x} 1 \; dy\,dx$$
+$$=\int_{0}^{1/2} \frac{1}{2}-x\;dx$$
+$$=\left [ \frac{x}{2} - \frac{x^{2}}{2} \right ]^{\frac{1}{2}}_{0}$$
+$$=\frac{1}{4}-\frac{1}{4}\cdot\frac{1}{2}$$
+$$=\frac{1}{8}$$
+
+
+
+We can also easily solve the question by looking at the graph, **the probability = shaded area in green**
+$$= \frac{(0.5)^{2}}{2}$$
+$$=\frac{1}{8}$$
+
+Verifying the result using the codes below:
+
+```{r Q1a, message=FALSE, warning=FALSE}
+# setting up the inner function as 0*x+1 because integrate must take in a function with a variable
+# `integrate` expects a vectorized function.
+# the InnerFunc must accept a vector of inputs and produce a vector of function evaluations at those
+# points, and the `Vectorize` function can be used to convert the InnerFunc to this form.
+
+InnerFunc <- function(x) {0*x+1}
+InnerIntegral <- Vectorize(function(y){integrate(InnerFunc,0,0.5-y)$value})
+integrate(InnerIntegral, 0, 0.5)
+
+# reference: https://stackoverflow.com/questions/43189512/double-integral-in-r/43194274
+```
+
+
+## Solve (b)
+
+$P(BC < \frac{1}{2})$
+
+![Graph 1b](https://raw.githubusercontent.com/shirley-wong/Data-605/master/Assignment5/graph%201b.png)
+
+Given that the point (B,C) is chosen at random in the unit square, let $x$ be $B$ and $y$ be $C$, we have
+
+$$P(y < \frac{1}{2x})$$
+
+$$= 1 - P(y > \frac{1}{2x})$$
+
+$$= 1 - \int_{1/2}^{1} \int_{1/(2x)}^{1} 1 \;dy\,dx $$
+
+$$=1 - \int_{1/2}^{1} 1-\frac{1}{2x} \;dx $$
+
+$$=1 - (1-\frac{1}{2}) +  \frac{1}{2}\cdot \left [ ln(x) \right ]^{1}_{1/2} $$
+$$=\frac{1}{2}  + \frac{1}{2} \cdot (ln(1)-ln(\frac{1}{2})) $$
+$$=\frac{1}{2}  + \frac{1}{2} \cdot (ln(1)-ln(1)+ln(2)) $$
+$$=\frac{1}{2}  + \frac{ln(2)}{2}$$
+$$\approx 0.84657359$$
+
+
+
+Verifying the result using the codes below:
+
+```{r Q1b, message=FALSE, warning=FALSE}
+# find the integral that is being deducted and minus it by 1
+InnerFunc <- function(x) {0*x+1}
+InnerIntegral <- Vectorize(function(y){integrate(InnerFunc,0.5/y,1)$value})
+1-integrate(InnerIntegral, 0.5, 1)$value
+```
+
+
+## Solve (c)
+
+$\left | B-C \right | < \frac{1}{2}$
+
+![Graph 1c](https://raw.githubusercontent.com/shirley-wong/Data-605/master/Assignment5/graph%201c.png)
+
+Given that the point (B,C) is chosen at random in the unit square, let $x$ be $B$ and $y$ be $C$, we have
+
+$$P(-\frac{1}{2} \leq x-y \leq \frac{1}{2})$$
+
+$$= P(\,y<x+\frac{1}{2} \;\;\; \cap \;\;\; y>x-\frac{1}{2}) \;\;, for \;\;x,y\in \mathbb{[0,1]}$$
+$$=\int_{0}^{1/2} \int_{0}^{x+1/2} 1 \;dy\,dx  + \int_{1/2}^{1} \int_{x-1/2}^{1} 1 \;dy\,dx$$
+$$= \int_{0}^{1/2} x+\frac{1}{2} \;dx + \int_{1/2}^{1} 1-x+\frac{1}{2} \;dx$$
+$$= \left [ \frac{x^{2}}{2}+\frac{x}{2} \right ]^{1/2}_{0} + \left [ \frac{3x}{2} - \frac{x^{2}}{2} \right ]^{1}_{1/2}$$
+$$= \frac{1}{8}+\frac{1}{4}+\frac{3}{2}-\frac{1}{2}-\frac{3}{4}+\frac{1}{8}$$
+$$= \frac{3}{4}$$
+
+
+We can also easily solve the question by looking at the graph, **the probability = shaded area in green**
+$$=1 \cdot 1 -  \frac{(\frac{1}{2})^{2}}{2} \cdot 2$$
+$$= 1 - \frac{1}{4}$$
+$$= \frac{3}{4}$$
+
+Verifying the result using the codes below:
+
+```{r Q1c, message=FALSE, warning=FALSE}
+# there are two integrals
+
+# first integral
+InnerFunc1 <- function(x) {0*x+1}
+InnerIntegral1 <- Vectorize(function(y){integrate(InnerFunc1,0,y+0.5)$value})
+#integrate(InnerIntegral1, 0, 0.5)
+
+# second integral
+InnerFunc2 <- function(x) {0*x+1}
+InnerIntegral2 <- Vectorize(function(y){integrate(InnerFunc2,y-0.5,1)$value})
+#integrate(InnerIntegral2, 0.5, 1)
+
+# solution
+integrate(InnerIntegral1, 0, 0.5)$value + integrate(InnerIntegral2, 0.5, 1)$value
+```
+
+
+
+## Solve (d)
+
+$$max \left \{ B,C \right \} < \frac{1}{2}$$
+
+
+![Graph 1d](https://raw.githubusercontent.com/shirley-wong/Data-605/master/Assignment5/graph%201d.png)
+
+Given that the point (B,C) is chosen at random in the unit square, let $x$ be $B$ and $y$ be $C$, we have
+
+$$P(x<\frac{1}{2} \;\; \cap  \;\; y<\frac{1}{2})$$
+$$\int_{0}^{1/2}\int_{0}^{1/2} 1 \;dy\,dx$$
+
+$$=(\frac{1}{2})^{2}$$
+$$=\frac{1}{4}$$
+
+Verifying the result using the codes below:
+
+```{r Q1d, message=FALSE, warning=FALSE}
+InnerFunc <- function(x) {0*x+1}
+InnerIntegral <- Vectorize(function(y){integrate(InnerFunc,0,0.5)$value})
+integrate(InnerIntegral, 0, 0.5)
+```
+
+
+
+## Solve (e)
+
+$$min \left \{ B,C \right \} < \frac{1}{2}$$
+
+![Graph 1e](https://raw.githubusercontent.com/shirley-wong/Data-605/master/Assignment5/graph%201e.png)
+
+
+Given that the point (B,C) is chosen at random in the unit square, let $x$ be $B$ and $y$ be $C$, we have
+
+$$P(x<\frac{1}{2} \;\; \cup  \;\; y<\frac{1}{2})$$
+$$\int_{0}^{1/2}\int_{0}^{1} 1 \;dy\,dx + \int_{1/2}^{1}\int_{0}^{1/2} 1 \;dy\,dx$$
+
+$$=\frac{1}{2} + \frac{1}{2}\cdot(1-\frac{1}{2})$$
+$$=\frac{1}{4}$$
+
+
+We can also easily solve the question by looking at the graph, **the probability = shaded area in green**
+$$= (\frac{1}{2})^{2} \cdot 3$$
+$$= \frac{3}{4}$$
+
+Verifying the result using the codes below:
+
+```{r Q1e, message=FALSE, warning=FALSE}
+# there are two integrals
+
+# first integral
+InnerFunc1 <- function(x) {0*x+1}
+InnerIntegral1 <- Vectorize(function(y){integrate(InnerFunc1,0,1)$value})
+#integrate(InnerIntegral1, 0, 0.5)
+
+# second integral
+InnerFunc2 <- function(x) {0*x+1}
+InnerIntegral2 <- Vectorize(function(y){integrate(InnerFunc2,0,0.5)$value})
+#integrate(InnerIntegral2, 0.5, 1)
+
+# solution
+integrate(InnerIntegral1, 0, 0.5)$value + integrate(InnerIntegral2, 0.5, 1)$value
+```
+
