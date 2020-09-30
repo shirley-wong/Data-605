@@ -1,0 +1,446 @@
+---
+title: "Data 605 HW6: Combinatorics, Conditional Probability"
+author: "Sin Ying Wong"
+date: "09/29/2020"
+output:
+  rmdformats::readthedown:
+    code_folding: hide
+    df_print: paged
+    highlight: tango
+    number_sections: yes
+    smooth_scroll: yes
+    theme: united
+    toc_collapsed: yes
+    toc_depth: 5
+    toc_float: yes
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+  pdf_document:
+    extra_dependencies:
+    - geometry
+    - multicol
+    - multirow
+  word_document:
+    toc: yes
+    toc_depth: '5'
+theme: lumen
+number_sections: yes
+toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+Please refer to the [Assignment 6 Document](https://github.com/shirley-wong/Data-605/blob/master/Assignment6/hw6.pdf).
+
+```{r libraries, message=FALSE, warning=FALSE}
+library(tidyr)
+library(dplyr)
+library(gtools)
+```
+
+# Problem Set 1
+
+A box contains 54 red marbles, 9 white marbles, and 75 blue marbles. If a marble is randomly selected from the box, what is the probability that it is red or blue? Express your answer as a fraction or a decimal number rounded to four decimal places.
+
+## PS1 Answer
+
+Total number of marbles we have in the box $=54+9+75=138$
+
+$$\therefore P(red\;or\; blue)=\frac{54+75}{138}$$
+$$=\frac{129}{138}=\frac{43}{46}$$
+$$\approx 0.9348$$
+
+```{r Q1, message=FALSE, warning=FALSE}
+red <- 54
+white <- 9
+blue <- 75
+all <- red+white+blue
+
+red+blue
+all
+(red+blue)/all
+```
+
+
+# Problem Set 2
+
+You are going to play mini golf. A ball machine that contains 19 green golf balls, 20 red golf balls, 24 blue golf balls, and 17 yellow golf balls, randomly gives you your ball. What is the probability that you end up with a red golf ball? Express
+your answer as a simplified fraction or a decimal rounded to four decimal places.
+
+## PS2 Answer
+
+Total number of balls we have in the machine $=19+20+24+17=80$
+
+$$\therefore P(red)=\frac{20}{80}=\frac{1}{4}=0.25$$
+
+```{r Q2, message=FALSE, warning=FALSE}
+green <- 19
+red <- 20
+blue <- 24
+yellow <- 17
+all <- green+red+blue+yellow
+
+(red)/all
+```
+
+
+# Problem Set 3
+
+A pizza delivery company classifies its customers by gender and location of residence. The research department has gathered data from a random sample of 1399 customers. The data is summarized in the table below.
+
+| Gender and Residence of Customers |       |         |
+|:---------------------------------:|:-----:|:-------:|
+|                                   | Males | Females |
+|             Apartment             |   81  |   228   |
+|                Dorm               |  116  |    79   |
+|           With Parent(s)          |  215  |   252   |
+|     Sorority/Fraternity House     |  130  |    97   |
+|               Other               |  129  |    72   |
+
+What is the probability that a customer is not male or does not live with parents? Write your answer as a fraction or a decimal number rounded to four decimal places.
+
+## PS3 Answer
+
+Total number of customers $=1399$
+
+$$\therefore P(not(male) \cup (not\,with\,parents))=1-P(male  \cap with\,parents)$$
+$$=1-\frac{215}{1399}=\frac{1184}{1399}\approx0.8463$$
+
+```{r Q3, message=FALSE, warning=FALSE}
+male_with_parents <- 215
+total <- 1399
+ans <- 1 - male_with_parents/total
+ans
+```
+
+# Problem Set 4
+
+Determine if the following events are independent.
+
+Event 1: Going to the gym. 
+
+Event 2: Losing weight.
+
+Answer: A) Dependent B) Independent
+
+## PS4 Answer
+
+My answer is A) Dependent.
+
+There is a causal relationship between the two events. As going to the gym for exercising helps in burning fat and losing weight, the two events are dependent.
+
+
+# Problem Set 5
+
+A veggie wrap at City Subs is composed of 3 different vegetables and 3 different condiments wrapped up in a tortilla. If there are 8 vegetables, 7 condiments, and 3 types of tortilla available, how many different veggie wraps can be made?
+
+## PS5 Answer
+
+By definition,
+$$C^{n}_{k} = \frac{n!}{(n-k)!k!}$$
+
+The probability of:
+
+(a) choosing 3 different vegetables from 8 types $=C^{8}_{3}$
+
+(b) choosing 3 different condiments from 7 types $=C^{7}_{3}$
+
+(c) choosing 1 tortilla from 3 types $=C^{3}_{1}$
+
+The number of different veggie wraps can be made is
+
+$$=C^{8}_{3}\times C^{7}_{3}\times C^{3}_{1}$$
+$$=\frac{8!}{5!3!} \times \frac{7!}{2!3!} \times \frac{3!}{2!1!}$$
+$$= 56 \times 35 \times 3$$
+$$=5880$$
+
+```{r Q5, message=FALSE, warning=FALSE}
+choose(n=8,k=3)*choose(n=7,k=3)*choose(n=3,k=1)
+```
+
+# Problem Set 6
+
+Determine if the following events are independent.
+
+Event 1: Jeff runs out of gas on the way to work.
+
+Event 2: Liz watches the evening news.
+
+Answer: A) Dependent B) Independent
+
+## PS6 Answer
+
+My answer is B) Independent.
+
+There is no causal relationship between the two events. Therefore they are independent.
+
+
+# Problem Set 7
+
+The newly elected president needs to decide the remaining 8 spots available in the cabinet he/she is appointing. If there are 14 eligible candidates for these positions (where rank matters), how many different ways can the members of the cabinet be appointed?
+
+## PS7 Answer
+
+Given that the rank matters, we are going to use permutation instead of combination for this question.
+
+By definition,
+$$P^{n}_{k} = \frac{n!}{(n-k)!}$$
+
+Therefore, the number of different ways to appoint the members of the cabinet is
+$$=P^{14}_{8}=\frac{14!}{(14-8)!}=121,080,960$$
+
+```{r Q7, message=FALSE, warning=FALSE}
+factorial(14)/factorial(14-8)
+#we cannot use permutations function here due to the large n causing long runtime
+#nrow(permutations(n=14,r=8)) 
+```
+
+
+# Problem Set 8
+
+A bag contains 9 red, 4 orange, and 9 green jellybeans. What is the probability of reaching into the bag and randomly withdrawing 4 jellybeans such that the number of red ones is 0, the number of orange ones is 1, and the number of green ones is 3? Write your answer as a fraction or a decimal number rounded to four decimal places.
+
+## PS8 Answer
+
+We have a total of $=9+4+9=22$ jellybeans in the bag.
+
+The probability of:
+
+(a) choosing 0 from 9 red jellybeans $=C^{9}_{0}$
+
+(b) choosing 1 from 4 orange jellybeans $=C^{4}_{1}$
+
+(c) choosing 3 from 9 green jellybeans $=C^{9}_{3}$
+
+(d) randomly choosing 4 jellybeans from the bag $=C^{22}_{4}$
+
+$\therefore$ The probability of the given situation is
+
+$$=\frac{C^{9}_{0} \cdot C^{4}_{1} \cdot C^{9}_{3}}{C^{22}_{4}}$$
+$$=\frac{1 \times 4 \times 84}{7315}$$
+$$=\frac{48}{1045}$$
+$$\approx 0.0459$$
+
+```{r Q8, message=FALSE, warning=FALSE}
+choose(n=9,k=0)*choose(n=4,k=1)*choose(n=9,k=3)/choose(n=22,k=4)
+```
+
+
+# Problem Set 9
+
+Evaluate the following expression.
+$$\frac{11!}{7!}$$
+
+## PS9 Answer
+
+$$\frac{11!}{7!}$$
+$$=\frac{11\times 10\times \cdots \times 2\times 1}{7\times6\times\cdots\times2\times1}$$
+$$=11\times10\times9\times8$$
+$$7920$$
+
+```{r Q9, message=FALSE, warning=FALSE}
+factorial(11)/factorial(7)
+```
+
+# Problem Set 10
+
+Describe the complement of the given event.
+67% of subscribers to a fitness magazine are over the age of 34.
+
+## PS10 Answer
+
+By definition, the complement of a given event = all outcomes that are not the event.
+
+i.e. The complement of the above given event is: 33% of subscribers to a fitness magazine are less than or equal to the age of 34.
+
+
+# Problem Set 11
+
+If you throw exactly three heads in four tosses of a coin you win \$97. If not, you pay me $30.
+
+**Step 1.** Find the expected value of the proposition. Round your answer to two decimal places.
+
+**Step 2.** If you played this game 559 times how much would you expect to win or lose? (Losses must be entered as negative.)
+
+## PS11 Answer
+
+### Step 1
+
+Number of ways getting exactly three heads in four tosses of a coin $=C^{4}_{3}=4$
+
+Number of possibilities in four tosses $=2^{4}=16$
+
+i.e. $P(win)=\frac{4}{16}=0.25$ and $P(lose)=1-0.25=0.75$
+
+and expected value $=0.25\times 97 + 0.75 \times (-30)=1.75$
+
+Therefore, the expected value of the proposition is $\$1.75$.
+
+```{r Q11a, message=FALSE, warning=FALSE}
+p_win <- choose(4,1)/2^4
+p_lose <- 1-p_win
+d_win <- 97
+d_lose <- -30
+exp <- p_win*d_win+p_lose*d_lose
+exp
+```
+
+### Step 2
+
+If I played this game 559 times, I would expect to win $\$1.75\times559=\$978.25$.
+
+```{r Q11b, message=FALSE, warning=FALSE}
+trial <- 559
+exp*trial
+```
+
+
+# Problem Set 12
+
+Flip a coin 9 times. If you get 4 tails or less, I will pay you \$23. Otherwise you pay me \$26.
+
+**Step 1.** Find the expected value of the proposition. Round your answer to two decimal places.
+
+**Step 2.** If you played this game 994 times how much would you expect to win or lose? (Losses must be entered as negative.)
+
+## PS12 Answer
+
+### Step 1
+
+Number of ways getting 4 tails or less in 9 tosses of a coin $=C^{9}_{4}+C^{9}_{3}+C^{9}_{2}+C^{9}_{1}+C^{9}_{0}=126+84+36+9+1=256$
+
+Number of possibilities in 9 tosses $=2^{9}=512$
+
+i.e. $P(win)=\frac{256}{512}=0.5$ and $P(lose)=1-0.5=0.5$
+
+and expected value $=0.5\times 23 + 0.5 \times (-26)=-1.5$
+
+Therefore, the expected value of the proposition is $-\$1.5$.
+
+```{r Q12a, message=FALSE, warning=FALSE}
+p_win <- (choose(9,4)+choose(9,3)+choose(9,2)+choose(9,1)+choose(9,0))/2^9
+p_lose <- 1-p_win
+d_win <- 23
+d_lose <- -26
+exp <- p_win*d_win+p_lose*d_lose
+exp
+```
+
+### Step 2
+
+If I played this game 994 times, I would expect to **lose** $\$1.5\times 994=\$1,491$.
+
+```{r Q12b, message=FALSE, warning=FALSE}
+trial <- 994
+exp*trial
+```
+
+
+
+# Problem Set 13
+
+The sensitivity and specificity of the polygraph has been a subject of study and debate for years. A 2001 study of the use of polygraph for screening purposes suggested that the probability of detecting a liar was 0.59 (sensitivity) and that the probability of detecting a "truth teller" was 0.90 (specificity). We estimate that about 20% of individuals selected for the screening polygraph will lie.
+
+a. What is the probability that an individual is actually a liar given that the polygraph detected him/her as such? (Show me the table or the formulaic solution or both.)
+
+b. What is the probability that an individual is actually a truth-teller given that the polygraph detected him/her as such? (Show me the table or the formulaic solution or both.)
+
+c. What is the probability that a randomly selected individual is either a liar or was identified as a liar by the polygraph? Be sure to write the probability statement.
+
+
+## PS13 Answer
+
+### Ideas
+
+As a polygraph is used to screen for liars, here, positive represents a liar, negative represents a truth teller. 
+
+To find the answers, first, list out the probabilities of all conditions:
+
+|                           | Actual Liar | Actual Truth Teller | Total Predicted |
+|---------------------------|-------------|---------------------|-----------------|
+| Predicted as Liar         | TP          | FP                  | TP+FP           |
+| Predicted as Truth Teller | FN          | TN                  | FN+TN           |
+| Total Actual              | TP+FN= 0.20 | FP+TN= 1-0.2 = 0.8  | TP+FP+TN+FN= 1  |
+
+
+By definition, we have
+
+$$Sensitivity = \frac{\#\,of\,true\,positives}{\#\,of\,true\,positives+\#\,of\,false\,negatives}$$
+$$0.59=\frac{TP}{0.20}$$
+$$TP=0.118$$
+
+Also by definition, we have
+
+$$Specificity = \frac{\#\,of\,true\,negatives}{\#\,of\,true\,negatives+\#\,of\,false\,positives}$$
+$$0.90=\frac{TN}{0.8}$$
+$$TN=0.72$$
+
+Thus, our table becomes:
+
+
+|                           | Actual Liar | Actual Truth Teller | Total Predicted |
+|---------------------------|-------------|---------------------|-----------------|
+| Predicted as Liar         | TP=0.118    | FP=0.08             | TP+FP=0.198     |
+| Predicted as Truth Teller | FN=0.082    | TN=0.72             | FN+TN=0.802     |
+| Total Actual              | TP+FN=0.20  | FP+TN=0.80          | 1.000           |
+
+
+```{r Q13, message=FALSE, warning=FALSE}
+liar <- 0.2 #liar=TP+FN
+#sensitivity = TP/(TP+FN) = TP/liar
+sensitivity <- 0.59
+TP <- sensitivity*liar
+#specificity = TN/(TN+FP) = TN/(1-liar)
+specificity <- 0.90
+TN <- specificity*(1-liar)
+FN <- liar - TP
+FP <- (1-liar)-TN
+print(c('TP:',TP,', FN:',FN,', FP:',FP,', TN:',TN))
+```
+
+
+### Part a
+
+$$P(liar|detected\,as\,liar)$$
+$$=\frac{P(liar\cap detected\,as\,liar)}{P(detected\,as\,liar)}$$
+$$=\frac{0.118}{0.198}$$
+$$=\frac{59}{99}$$
+$$=0.\dot{5}\dot{9}$$
+$$\approx 0.59596$$
+
+```{r Q13a, message=FALSE, warning=FALSE}
+a <- TP/(TP+FP)
+a
+```
+
+
+### Part b
+
+$$P(truth\,teller|detected\,as\,truth\,teller)$$
+$$=\frac{P(truth\,teller\cap detected\,as\,truth\,teller)}{P(detected\,as\,truth\,teller)}$$
+$$=\frac{0.72}{0.802}$$
+$$=\frac{360}{401}$$
+$$\approx 0.8977556$$
+
+```{r Q13b, message=FALSE, warning=FALSE}
+b <- TN/(FN+TN)
+b
+```
+
+### Part c
+
+$$P(liar \cup detected\,as\,liar)$$
+$$P(liar) + P(detected\,as\,liar) - P(liar \cap detected\,as\,liar)$$
+$$=0.2+0.198-0.118$$
+$$=\frac{0.72}{0.802}$$
+$$=0.28$$
+
+```{r Q13c, message=FALSE, warning=FALSE}
+c <- TP+FN + TP+FP - TP
+c
+```
