@@ -1,0 +1,167 @@
+---
+title: "Data 605 HW7: Imp. Distributions, EX, VARX"
+author: "Sin Ying Wong"
+date: "10/10/2020"
+output:
+  rmdformats::readthedown:
+    code_folding: hide
+    df_print: paged
+    highlight: tango
+    number_sections: yes
+    smooth_scroll: yes
+    theme: united
+    toc_collapsed: yes
+    toc_depth: 5
+    toc_float: yes
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+  pdf_document:
+    extra_dependencies:
+    - geometry
+    - multicol
+    - multirow
+  word_document:
+    toc: yes
+    toc_depth: '5'
+theme: lumen
+number_sections: yes
+toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+Please refer to the [Assignment 7 Document](https://github.com/shirley-wong/Data-605/blob/master/Assignment7/hw7.pdf).
+
+```{r libraries, message=FALSE, warning=FALSE}
+library(tidyr)
+library(dplyr)
+library(gtools)
+```
+
+# Problem Set 1 (Sec5.1 Ex6)
+
+Let $X_{1}, X_{2}, \cdots , X_{n}$ be $n$ mutually independent random variables, each of which is uniformly distributed on the integers from $1$ to $k$. Let $Y$ denote the minimum of the $X_{i}$'s. Find the distribution of $Y$.
+
+
+## PS1 Answer
+
+Given that $i \in [1,n], \;\forall X_{i} \in [1,k], \;Y=min(X_{i})$
+
+For $Y=1,$ the probability for an $X_{i}=1$ is $\frac{1}{k}$ and the probability for an $X_{i}>1$ is $\frac{k-1}{k}$.
+
+$$\therefore P(Y=1)=P(min (X_{i})=1)=1-(\frac{k-1}{k})^{n}$$
+$$=(\frac{k-0}{k})^{n}-(\frac{k-1}{k})^{n}$$
+
+For $Y=2,$ the probability for an $X_{i}>2$ is $\frac{k-2}{k}$.
+
+$$\therefore P(Y=2)=P(min (X_{i})=2)=1-P(Y=1)-P(Y>2)$$
+$$=1-(1-(\frac{k-1}{k})^{n})-(\frac{k-2}{k})^{n}$$
+$$=(\frac{k-1}{k})^{n}-(\frac{k-2}{k})^{n}$$
+
+For $Y=3,$ the probability for an $X_{i}>3$ is $\frac{k-3}{k}$.
+
+$$\therefore P(Y=3)=P(min (X_{i})=3)=1-P(Y=1)-P(Y=2)-P(Y>3)$$
+$$=1-(1-(\frac{k-1}{k})^{n})-((\frac{k-1}{k})^{n}-(\frac{k-2}{k})^{n})-(\frac{k-3}{k})^{n}$$
+$$=(\frac{k-2}{k})^{n}-(\frac{k-3}{k})^{n}$$
+
+Therefore, by induction, the distribution of Y is
+$$P(Y=y)=P(min (X_{i})=y)=(\frac{k-y+1}{k})^{n}-(\frac{k-y}{k})^{n}\;\;\;for\,y \in[1,k]\,,\;k\in \mathbb{Z}^{+}$$
+
+
+
+# Problem Set 2
+
+Your organization owns a copier (future lawyers, etc.) or MRI (future doctors). This machine has a manufacturer's expected lifetime of 10 years. This means that we expect one failure every ten years. (Include the probability statements and R Code for each part.).
+
+(a.) What is the probability that the machine will fail after 8 years? Provide also the expected value and standard deviation. Model as a geometric. (Hint: the probability is equivalent to not failing during the first 8 years.)
+
+(b.) What is the probability that the machine will fail after 8 years? Provide also the expected value and standard deviation. Model as an exponential.
+
+(c.) What is the probability that the machine will fail after 8 years? Provide also the expected value and standard deviation. Model as a binomial. (Hint: 0 success in 8 years.)
+
+(d.) What is the probability that the machine will fail after 8 years? Provide also the expected value and standard deviation. Model as a Poisson.
+
+
+## PS2 Answer
+
+```{r Q2 general, message=FALSE, warning=FALSE}
+lifetime = 10
+p = 1/lifetime #probability of machine failure
+q = 1-p
+n = 8
+```
+
+### a. Geometric
+
+Assuming the unit is annual. Geometric pmf is $p(1-p)^{n-1}$, $E[X]=\frac{1}{p}$ and $V[X]=\frac{1-p}{p^{2}}$.
+
+The probability that the machine will fail after 8 years is $0.4304672$.
+
+The expected value is $10$ and the standard deviation is $9.486833$.
+
+```{r Q2a, message=FALSE, warning=FALSE}
+q^8 #probability of 0 machine failures in 8 years
+pgeom(n-1,p,lower.tail = FALSE) 
+
+1/p #expected value
+
+sqrt((1-p)/(p^2)) #sd
+```
+
+### b. Exponential
+
+Exponential pdf is $\lambda e^{-\lambda x}$ for $x\geq0$ and 0 otherwise. $E[X]=\frac{1}{\lambda}$ and $V[X]=\frac{1}{\lambda^{2}}$, where $\lambda=1/10=p$.
+
+The probability that the machine will fail after 8 years is $0.449329$.
+
+The expected value is $10$ and the standard deviation is $10$.
+
+```{r Q2b, message=FALSE, warning=FALSE}
+pexp(n, p, lower.tail = FALSE)
+
+1/p #E[X]
+
+sqrt(1/p^2) #sd
+```
+
+### c. Binomial
+
+Binomial pmf is $\begin{pmatrix}n\\ p\end{pmatrix}p^{k}(1-p)^{n-k}$. $E[X]=np$ and $V[X]=np(1-p)$.
+
+The probability that the machine will fail after 8 years is $0.4304672$.
+
+The expected value is $0.8$ and the standard deviation is $0.8485281$.
+
+```{r Q2c, message=FALSE, warning=FALSE}
+pbinom(0,n,p) #0 machine failures in 8 years
+
+n*p #E[X]
+
+sqrt(n*p*q) #sd
+```
+
+### d. Poisson
+
+Poisson pmf is $\frac{\lambda^{k}e^{-\lambda}}{k!}$ where $k$ is the number of occurrences. $E[X]=\lambda$ and $V[X]=\lambda$.
+
+As the average number of machine failure in every 10 years is 1, the average number of occurrences in 8 years will be 8/10.
+
+The probability that the machine will fail after 8 years is $0.449329$.
+
+The expected value is $0.8$ and the standard deviation is $0.8944272$.
+
+```{r Q2d, message=FALSE, warning=FALSE}
+lambda = n/lifetime #the average number of failures in n years
+
+ppois(0, lambda) #0 machine failures in 8 years
+
+lambda #E[X]
+
+sqrt(lambda) #sd
+```
+
