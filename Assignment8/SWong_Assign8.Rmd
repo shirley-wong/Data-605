@@ -1,0 +1,169 @@
+---
+title: "Data 605 HW8: Sums of RVs, Law of Large Numbers"
+author: "Sin Ying Wong"
+date: "10/18/2020"
+output:
+  rmdformats::readthedown:
+    code_folding: hide
+    df_print: paged
+    highlight: tango
+    number_sections: yes
+    smooth_scroll: yes
+    theme: united
+    toc_collapsed: yes
+    toc_depth: 5
+    toc_float: yes
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+  pdf_document:
+    extra_dependencies:
+    - geometry
+    - multicol
+    - multirow
+  word_document:
+    toc: yes
+    toc_depth: '5'
+theme: lumen
+number_sections: yes
+toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+Assignment 8: Introduction to Probability Textbook page303 Sec7.2 Ex11, Ex14, and page320 Sec8.2 Ex1.
+
+```{r libraries, message=FALSE, warning=FALSE}
+library(tidyr)
+library(dplyr)
+library(gtools)
+```
+
+# Problem Set 1 (Sec7.2 Ex11)
+
+A company buys 100 lightbulbs, each of which has an exponential lifetime of 1000 hours. 
+What is the expected time for the first of these bulbs to burn out? (See Exercise 10.)
+
+## PS1 Answer
+
+From Ex10, we know that, let $X_{1}, X_{2}, \cdots, X_{n}$ be $n$ independent random variables each of which has an exponential density with mean $\mu$ and let $M$ be the minimum value of the $X_{j}$, the density for $M$ is exponential with mean $\frac{\mu}{n}$.
+
+By using this property, when $X_{i}\sim Exp(\lambda_{i})$, we have $min(X_{i})\sim Exp(\Sigma \lambda_{i})$
+
+For Ex11, from the given information, we have $n=100$ exponential variables where each represents the lifetime of one lightbulb with the average as $1000$ hours.  Assuming independence, the expected time for the first lightbulb to burnout is the minimum of lifetime of this set of $100$ lightbulbs.
+
+For any individual lightbulb, mean $=1000$ and $E[x]=\frac{1}{\lambda}=\frac{1}{1000}$
+
+For $min(X_{i})$, new mean $= mean^{'}=\frac{mean}{n}=\frac{1000}{100}=10=\frac{1}{\lambda^{'}}$. Thus, $\lambda^{'}=\frac{1}{10}$ and $E[min(X_{i})]=\frac{1}{\lambda^{'}}=10$.
+
+Therefore, the expected time for the first of these 100 lightbulbs to burn out is 10 hours.
+
+
+# Problem Set 2 (Sec7.2 Ex14)
+
+Assume that $X_{1}$ and $X_{2}$ are independent random variables, each havng an exponential density with parameter $\lambda$. 
+
+Show that $Z = X_{1}-X_{2}$ has density $f_{Z}(z)=\frac{1}{2}\lambda e^{-\lambda \left | z \right |}$.
+
+## PS2 Answer
+
+As both $X_{1}$ and $X_{2}$ are independent exponential variables, both are evaluated on the interval $[0,\infty)$.
+
+We have $f_{X_{1}}(x_{1})=f_{X_{2}}(x_{2})= \left\{\begin{matrix}\lambda e^{-\lambda x} & x \geq 0\\ 0 & otherwise \end{matrix}\right.$
+
+$$f_{Z}(z)= f_{X_{1}+(-X_{2})}(z) = \int_{-\infty}^{\infty} f_{x_{1}}(x_{1})f_{-x_{2}}(z-x_{1})dx_{1}$$
+$$=\int_{-\infty}^{\infty} f_{x_{1}}(x_{1})f_{x_{2}}(x_{1}-z)dx_{1}$$
+$$=\int_{-\infty}^{\infty} \lambda e^{-\lambda (x_{1})} \lambda e^{-\lambda (x_{1}-z)} dx_{1}$$
+$$=\int_{-\infty}^{\infty} \lambda^{2} e^{\lambda (z-2x_{1})} dx_{1}$$
+
+For $z \geq 0$ and $x_{2}=x_{1}-z \geq 0,$ then $x_{1}\geq z\,$. For $z<0$ and $x_{2}=x_{1}-z \geq 0,$ then $x_{1}\geq 0$.
+
+
+- For $z<0,\, x_{1}\geq 0$,
+
+$$f_{Z}(z)= f_{X_{1}+(-X_{2})}(z) = \int_{-\infty}^{\infty} f_{x_{1}}(x_{1})f_{x_{2}}(x_{1}-z)dx_{1}$$
+$$=\int_{-\infty}^{\infty} \lambda^{2} e^{\lambda (z-2x_{1})} dx_{1}$$
+$$= \int_{0}^{\infty} \lambda e^{\lambda z} \lambda e^{-2\lambda x_{1}} dx_{1}$$
+$$=-\frac{\lambda}{2} e^{\lambda z}  \int_{0}^{\infty} -2\lambda e^{-2\lambda x_{1}} dx_{1}$$
+$$=-\frac{\lambda}{2} e^{\lambda z} \left [ e^{-2\lambda x_{1}} \right ]^{\infty}_{0}$$
+$$=-\frac{\lambda}{2} e^{\lambda z}[0-1]$$
+$$=\frac{\lambda}{2} e^{\lambda z}$$
+
+
+- For $z \geq 0,\, x_{1}\geq z$,
+
+$$f_{Z}(z)= f_{X_{1}+(-X_{2})}(z) = \int_{-\infty}^{\infty} f_{x_{1}}(x_{1})f_{x_{2}}(x_{1}-z)dx_{1}$$
+$$=\int_{-\infty}^{\infty} \lambda^{2} e^{\lambda (z-2x_{1})} dx_{1}$$
+
+$$= \int_{z}^{\infty} \lambda e^{\lambda z} \lambda e^{-2\lambda x_{1}} dx_{1}$$
+$$=-\frac{\lambda}{2} e^{\lambda z}  \int_{z}^{\infty} -2\lambda e^{-2\lambda x_{1}} dx_{1}$$
+$$=-\frac{\lambda}{2} e^{\lambda z} \left [ e^{-2\lambda x_{1}} \right ]^{\infty}_{z}$$
+$$=-\frac{\lambda}{2} e^{\lambda z}[0-e^{-2\lambda z}]$$
+$$=\frac{\lambda}{2} e^{-\lambda z}$$
+
+Combine the above results, we have
+
+$$f_{Z}(z)= \left\{\begin{matrix} \frac{\lambda}{2} e^{\lambda z} & z < 0\\ \frac{\lambda}{2} e^{-\lambda z} & z\geq 0 \end{matrix}\right.$$
+$$f_{Z}(z)=\frac{1}{2}\lambda e^{-\lambda \left | z \right |}$$
+
+
+
+# Problem Set 3 (Sec8.2 Ex1)
+
+Let $X$ be a continuous random variable with mean $\mu =10$ and variance $\sigma ^{2} = \frac{100}{3}$. Using Chebyshev's Inequality, find an upper bound for the following probabilities.
+
+(a.) $P(\left | X-10 \right | \geq 2)$
+
+(b.) $P(\left | X-10 \right | \geq 5)$
+
+(c.) $P(\left | X-10 \right | \geq 9)$
+
+(d.) $P(\left | X-10 \right | \geq 20)$
+
+## PS3 Answer
+
+From textbook page306 Example 8.1, we have the following information:
+
+Let $X$ by any random variable with $E(X)=\mu$ and $V(X)=\sigma^{2}$. Then, if $\epsilon=k\sigma$, Chebyshev's Inequality states that
+$$P(\left | X-\mu \right | \geq k\sigma) \leq \frac{\sigma^{2}}{k^{2}\sigma^{2}}=\frac{1}{k^{2}}$$
+
+### Part a
+
+By using Chebyshev’s Inequality and the given information $\mu=10$ and $\sigma^{2}=\frac{100}{3}$, we have $\sigma=\frac{10}{\sqrt3}$.
+
+For $k\sigma=2$, we have $k=2\times \frac{\sqrt3}{10}$.
+
+$$\because \frac{1}{k^{2}}=\frac{100}{2^{2}\times3}=\frac{25}{3}>1 \;\; and \;\; max(Probability)=1$$
+
+$$\therefore P(\left | X-10 \right | \geq 2) < 1$$
+
+
+### Part b
+
+By using Chebyshev’s Inequality and the given information $\mu=10$ and $\sigma^{2}=\frac{100}{3}$, we have $\sigma=\frac{10}{\sqrt3}$
+
+For $k\sigma=5$, we have $k=5\times \frac{\sqrt3}{10}$.
+
+$$\because \frac{1}{k^{2}}=\frac{100}{5^{2}\times3}=\frac{4}{3}>1 \;\; and \;\; max(Probability)=1$$
+
+$$\therefore P(\left | X-10 \right | \geq 5) < 1$$
+
+### Part c
+
+By using Chebyshev’s Inequality and the given information $\mu=10$ and $\sigma^{2}=\frac{100}{3}$, we have $\sigma=\frac{10}{\sqrt3}$
+
+For $k\sigma=9$, we have $k=9\times \frac{\sqrt3}{10}$.
+
+$$\therefore P(\left | X-10 \right | \geq 9) \leq \frac{1}{k^{2}}=\frac{100}{81\times3}=\frac{100}{243}$$
+
+### Part d
+
+By using Chebyshev’s Inequality and the given information $\mu=10$ and $\sigma^{2}=\frac{100}{3}$, we have $\sigma=\frac{10}{\sqrt3}$
+
+For $k\sigma=20$, we have $k=20\times \frac{\sqrt3}{10}$.
+
+$$\therefore P(\left | X-10 \right | \geq 20) \leq \frac{1}{k^{2}}=\frac{100}{400\times3}=\frac{1}{12}$$
