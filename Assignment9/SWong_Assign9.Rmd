@@ -1,0 +1,188 @@
+---
+title: "Data 605 HW9: Central Limit Theorem, Generating Functions"
+author: "Sin Ying Wong"
+date: "10/25/2020"
+output:
+  rmdformats::readthedown:
+    code_folding: hide
+    df_print: paged
+    highlight: tango
+    number_sections: yes
+    smooth_scroll: yes
+    theme: united
+    toc_collapsed: yes
+    toc_depth: 5
+    toc_float: yes
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+  pdf_document:
+    extra_dependencies:
+    - geometry
+    - multicol
+    - multirow
+  word_document:
+    toc: yes
+    toc_depth: '5'
+theme: lumen
+number_sections: yes
+toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+Please refer to the [Assignment 9 Document](https://github.com/shirley-wong/Data-605/blob/master/Assignment9/hw9.pdf).
+
+```{r libraries, message=FALSE, warning=FALSE}
+library(tidyr)
+library(dplyr)
+library(gtools)
+```
+
+# Problem Set 1 (Sec9.3 Ex11)
+
+The price of one share of stock in the Pilsdorff Beer Company (see Exercise 8.2.12) is given by $Y_{n}$ on the $n$th day of the year. Finn observes that the differences $X_{n} = Y_{n+1} − Y_{n}$ appear to be independent random variables with a common distribution having mean $μ = 0$ and variance $\sigma^{2} = \frac{1}{4}$. 
+
+If $Y_{1} = 100$, estimate the probability that $Y_{365}$ is
+
+(a.) $\geq 100$
+
+(b.) $\geq 110$
+
+(c.) $\geq 120$
+
+## PS1 Answer
+
+From the given information, we have
+
+- $\mu = 0, \; \sigma^{2} = \frac{1}{4}$
+
+- $X_{n} + Y_{n} = Y_{n+1}$
+
+- $Y_{1} = 100$
+
+Thus, $Y_{n+1} = X_{n} + Y_{n} = X_{n} + X_{n-1} + Y_{n-1} = X_{n} + X_{n-1} + \cdots + X_{2} + X_{1} + Y_{1} = \sum_{i=1}^{n}X_{i} + 100$
+
+Therefore, $Y_{365} = \sum_{i=1}^{364}X_{i} + 100$.
+
+As $X_{i}$ has $\mu = 0, \; \sigma^{2} = \frac{1}{4}$, by Central Limit Theorem, we have
+
+$$\frac{1}{n} \sum_{i=1}^{n}X_{i} \sim N(0, \frac{\sigma^{2}}{n})  \Rightarrow  \sum_{i=1}^{n}X_{i} \sim N(0, \sigma^{2}n)$$
+$$\therefore Y_{365} \sim N(100, \frac{364}{4})$$
+
+### Part (a)
+
+```{r 1a}
+m <- 100
+sd <- sqrt(364/4)
+
+pnorm(100, m, sd, lower.tail = FALSE)
+```
+
+$P(Y_{365}\geq 100) = 0.5$
+
+### Part (b)
+
+```{r 1b}
+pnorm(110, m, sd, lower.tail = FALSE)
+```
+
+$P(Y_{365}\geq 110) = 0.1472537$
+
+### Part (c)
+
+```{r 1c}
+pnorm(120, m, sd, lower.tail = FALSE)
+```
+
+$P(Y_{365}\geq 120) = 0.01801584$
+
+
+# Problem Set 2
+
+Calculate the expected value and variance of the binomial distribution using the moment generating function.
+
+## PS2 Answer
+
+Binomial distribution is $\begin{pmatrix}n\\k\end{pmatrix} p^{k} (1-p)^{n-k}$
+
+Moment generating function is
+
+$$g(t) = \sum_{k=0}^{n} e^{tk} \begin{pmatrix}n\\k\end{pmatrix} p^{k} (1-p)^{n-k}$$
+$$= \sum_{k=0}^{n} \begin{pmatrix}n\\k\end{pmatrix} (pe^{t})^{k} (1-p)^{n-k}$$
+$$=(pe^{t}+(1-p))^{n}$$
+
+First derivative of g(t) is
+
+$$g'(t) = n(pe^{t}+(1-p))^{n-1}(pe^{t})$$
+
+Thus, 
+
+$$E[X] = \mu = g'(t=0) = n(pe^{0}+(1-p))^{n-1}(pe^{0}) = np$$
+
+Second derivative of g(t) is
+
+$$g''(t) = n(n-1)(pe^{t}+(1-p))^{n-2}(pe^{t})^{2}+n(pe^{t}+(1-p))^{n-1}(pe^{t})$$
+
+Thus, 
+$$E[X^{2}] = g''(t=0) = n(n-1)(pe^{0}+(1-p))^{n-2}(pe^{0})^{2}+n(pe^{0}+(1-p))^{n-1}(pe^{0})$$
+
+$$= n(n-1)(p)^{2} + np = n^{2}p^{2}-np^{2}+np$$
+and,
+
+$$\sigma^{2} = E[X^{2}]-E[X]^{2} = n^{2}p^{2}-np^{2}+np - (np)^{2} = -np^{2}+np = np(1-p)$$
+
+Therefore, the expected value and the variance of the binomial distribution using the moment generating function is $np$ and $np(1-p)$.
+
+
+# Problem Set 3
+
+Calculate the expected value and variance of the exponential distribution using the moment generating function.
+
+## PS3 Answer
+
+Exponential distribution is $\lambda e^{-\lambda x}$ for $X \in [0,\infty)$.
+
+Moment generating function is
+
+$$g(t) =\int_{x=0}^{\infty} e^{tx} \lambda e^{-\lambda x} dx$$
+$$= \lambda  \int_{x=0}^{\infty} e^{(t-\lambda) x} dx$$
+$$= \begin{bmatrix} \frac{\lambda  e^{(t-\lambda) x}}{(t-\lambda)} \end{bmatrix} ^{\infty}_{0}$$
+$$= \frac{0-\lambda}{t-\lambda} \;\; for\;t<\lambda$$
+$$= \lambda (\lambda-t)^{-1} \;\; for\;t<\lambda$$
+
+First derivative of g(t) is
+
+$$g'(t) = -\lambda(\lambda-t)^{-2}(-1)=\lambda(\lambda-t)^{-2}$$
+
+Thus, $E[X] = \mu = g'(t=0) = \lambda^{-1}$
+
+Second derivative of g(t) is
+
+$$g''(t) = (-2)\lambda(\lambda-t)^{-3}(-1) = 2\lambda(\lambda-t)^{-3}$$
+
+Thus, $E[X^{2}] = g''(t=0) = 2\lambda^{-2}$
+
+and,
+
+$$\sigma^{2} = E[X^{2}]-E[X]^{2} = 2\lambda^{-2} - (\lambda^{-1})^{2} = \lambda^{-2}$$
+
+Therefore, the expected value and the variance of the binomial distribution using the moment generating function is $\lambda^{-1}$ and $\lambda^{-2}$.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
