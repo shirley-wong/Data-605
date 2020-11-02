@@ -1,0 +1,87 @@
+---
+title: "Data 605 HW10: Markov Chains, Random Walks"
+author: "Sin Ying Wong"
+date: "10/31/2020"
+output:
+  rmdformats::readthedown:
+    code_folding: hide
+    df_print: paged
+    highlight: tango
+    number_sections: yes
+    smooth_scroll: yes
+    theme: united
+    toc_collapsed: yes
+    toc_depth: 5
+    toc_float: yes
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+  pdf_document:
+    extra_dependencies:
+    - geometry
+    - multicol
+    - multirow
+  word_document:
+    toc: yes
+    toc_depth: '5'
+theme: lumen
+number_sections: yes
+toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+Please refer to the [Assignment 10 Document](https://github.com/shirley-wong/Data-605/blob/master/Assignment10/hw10.pdf).
+
+# Problem Set 1
+
+Smith is in jail and has 1 dollar; he can get out on bail if he has 8 dollars. A guard agrees to make a series of bets with him. If Smith bets A dollars, he wins A dollars with probability 0.4 and loses A dollars with probability 0.6. Find the probability that he wins 8 dollars before losing all of his money if
+
+(a.) he bets 1 dollar each time (timid strategy).
+
+(b.) he bets, each time, as much as possible but not more than necessary to bring his fortune up to 8 dollars (bold strategy).
+
+(c.) Which strategy gives Smith the better chance of getting out of jail?
+
+## PS1 Answer
+
+
+### Part (a)
+
+Using the Gambler's Ruin equation, $P_{i} = \left\{\begin{matrix} \frac{1-(\frac{q}{p})^{i}}{1-(\frac{q}{p})^{N}} & if\;p\neq q\\ \frac{i}{N} & if\;p = q =0.5 \end{matrix}\right.$
+
+Given that $i=1, N=8, p=0.4, q=0.6,$ the probability of Smith wins 8 dollars before losing all of his money if he bets 1 dollar each time is 0.0203.
+
+```{r 1a}
+p=0.4
+q=1-p
+i=1
+n=8
+(1-(q/p)^i)/(1-(q/p)^n)
+```
+
+### Part (b)
+
+Using bold strategy, Smith is not allowed to lose any bets as that will lose all his money and that contradicts with the given condition. 
+
+To bring his fortune up to 8 dolloars, he has to win 3 bets in a row.
+
+- Bet#1: bet 1 dollar, win the bet and gain 1 dollar, end up with 2 dollars.
+
+- Bet#2: bet 2 dollars, win the bet and gain 2 dollars, end up with 4 dollars.
+
+- Bet#3: bet 4 dollars, win the bet and gain 4 dollars, end up with 8 dollars.
+
+Therefore, the probability of using bold strategy $= (0.4)^{3} = 0.064$
+
+```{r 1b}
+p^3
+```
+
+### Part (c)
+
+The bold strategy gives Smith the better chance of getting out of jail as bold strategy has a higher probability of Smith winning 8 dollars before losing all of his money.
