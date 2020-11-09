@@ -1,0 +1,107 @@
+---
+title: "Data 605 HW11: Regression Analysis in R 1"
+author: "Sin Ying Wong"
+date: "11/08/2020"
+output:
+  rmdformats::readthedown:
+    code_folding: hide
+    df_print: paged
+    highlight: tango
+    number_sections: yes
+    smooth_scroll: yes
+    theme: united
+    toc_collapsed: yes
+    toc_depth: 5
+    toc_float: yes
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+  pdf_document:
+    extra_dependencies:
+    - geometry
+    - multicol
+    - multirow
+  word_document:
+    toc: yes
+    toc_depth: '5'
+theme: lumen
+number_sections: yes
+toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+# Regression Problem
+
+Using the “cars” dataset in R, build a linear model for stopping distance as a function of speed and replicate the analysis of your textbook chapter 3 (visualization, quality evaluation of the model, and residual analysis.)
+
+## Import Data
+
+There are 50 observations of speed of cars and the distances taken to stop from the dataset `cars` without any NA values.
+
+```{r import data}
+data <- datasets::cars
+head(cars)
+summary(cars)
+dim(data)
+```
+
+## Visualize the Data
+
+```{r scatter}
+plot(data, main = "Stopping Dist vs Speed", xlab = "Speed (mph)", ylab = "Stopping Distance (ft)")
+```
+
+## Build a Linear Model
+
+Build a simple linear model with the dataset `cars`.
+
+```{r lm}
+cars_lm <- lm(dist~speed, data=cars)
+plot(data, main = "Stopping Dist vs Speed", xlab = "Speed (mph)", ylab = "Stopping Distance (ft)")
+abline(reg=cars_lm, col="blue")
+```
+
+## Evaluate the Model
+
+Quality evaluation of the model:
+
+Residuals: the median is close to zero and the 1Q vs 3Q and min vs max are roughly the same magnitude. This shows that the model is a fairly good model.
+
+P-value: The p-value of speed is very close to zero, which shows a strong significance at 99% confidence, while the intercept is significant at 95% confidence. This shows that the model is predicting the two values quite well.
+
+Multiple R-squared: The $R^{2}$ value represents how well the model describes the measured data. It explains 65.11% of the data's variation, which is fairly good.
+
+```{r evaluate}
+summary(cars_lm)
+```
+
+## Residual Analysis
+
+The residuals vary around and are not uniformly scattered above and below zero. They do not show any special patterns.
+
+```{r}
+plot(fitted(cars_lm), resid(cars_lm), 
+     main = "Cars: Fitted Stopping Distance vs Residuals", 
+     xlab = "Fitted Stopping Distance", ylab = "Residuals")
+abline(h=0, col="blue")
+```
+
+The QQ plot shows some outliers above the line at the upper end and the lower end. The residuals might not be very normal.
+
+```{r}
+qqnorm(resid(cars_lm))
+qqline(resid(cars_lm))
+```
+
+To check the normality, we can also look at the histogram or a normal probability plot of the residuals.
+
+The histogram is bimodal and slightly right-skewed. Therefore, the residuals are barely normal.
+```{r}
+hist(resid(cars_lm), breaks=15, prob=TRUE)
+curve(dnorm(x, mean=mean(resid(cars_lm)), sd=sd(resid(cars_lm))), col="red", add=TRUE)
+```
