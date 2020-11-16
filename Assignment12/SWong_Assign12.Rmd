@@ -1,0 +1,394 @@
+---
+title: "Data 605 HW11: Regression Analysis in R 2"
+author: "Sin Ying Wong"
+date: "11/15/2020"
+output:
+  rmdformats::readthedown:
+    code_folding: hide
+    df_print: paged
+    highlight: tango
+    number_sections: yes
+    smooth_scroll: yes
+    theme: united
+    toc_collapsed: yes
+    toc_depth: 5
+    toc_float: yes
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+  pdf_document:
+    extra_dependencies:
+    - geometry
+    - multicol
+    - multirow
+  word_document:
+    toc: yes
+    toc_depth: '5'
+theme: lumen
+number_sections: yes
+toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+Please refer to the [Assignment 12 Document](https://github.com/shirley-wong/Data-605/blob/master/Assignment12/hw12.pdf).
+
+
+# Regression Problem
+
+The given “who.csv” dataset contains real-world data from 2008. The variables included follow.
+
+| Variable       | Description                                                                                |
+|----------------|--------------------------------------------------------------------------------------------|
+| Country        | Name of the country                                                                        |
+| LifeExp        | Average life expectancy for the country in years                                           |
+| InfantSurvival | Proportion of those surviving to one year or more                                          |
+| Under5Survival | Proportion of those surviving to five years or more                                        |
+| TBFree         | Proportion of the population without TB                                                    |
+| PropMD         | Proportion of the population who are MDs                                                   |
+| PropRN         | Proportion of the population who are RNs                                                   |
+| PersExp        | Mean personal expenditures on healthcare in US dollars at average exchange rate            |
+| GovtExp        | Mean government expenditures per capita on healthcare, US dollars at average exchange rate |
+| TotExp         | Sum of personal and government expenditures                                                |
+
+Q1. Provide a scatterplot of LifeExp~TotExp, and run simple linear regression. Do not transform the variables. Provide and interpret the F statistics, R^2, standard error,and p-values only. Discuss whether the assumptions of simple linear regression met.
+
+Q2. Raise life expectancy to the 4.6 power (i.e., LifeExp^4.6). Raise total expenditures to the 0.06 power (nearly a log transform, TotExp^.06). Plot LifeExp^4.6 as a function of TotExp^.06, and r re-run the simple regression model using the transformed variables. Provide and interpret the F statistics, R^2, standard error, and p-values. Which model is "better?"
+
+Q3. Using the results from 3, forecast life expectancy when TotExp^.06 =1.5. Then forecast life expectancy when TotExp^.06=2.5.
+
+Q4. Build the following multiple regression model and interpret the F Statistics, R^2, standard error, and p-values. How good is the model?  
+
+$$LifeExp = b0+b1 \times PropMd + b2 \times TotExp +b3 \times PropMD \times TotExp$$
+
+Q5. Forecast LifeExp when PropMD=.03 and TotExp = 14. Does this forecast seem realistic? Why or why not?
+
+## Import Data
+
+The `who.csv` dataset contains 10 variables and 190 observations without NA values.
+
+```{r import data}
+library(tidyverse)
+library(lmSupport)
+download.file("https://raw.githubusercontent.com/shirley-wong/Data-605/master/Assignment12/who.csv", destfile = "who.csv")
+df <- read_csv("who.csv")
+df
+dim(df)
+str(df)
+summary(df)
+```
+
+## Q1 
+
+### Build Model
+
+Q: Plot a scatterplot of `LifeExp`~`TotExp` and run simple linear regression.
+
+```{r lm}
+df_lm <- lm(LifeExp~TotExp, data=df)
+summary(df_lm)
+
+plot(LifeExp~TotExp, data=df, main = "Total Expenditures vs Average Life Expectancy", xlab = "Sum of personal and government expenditures (dollars)", ylab = "Average life expectancy for the country (years)")
+abline(reg=df_lm, col="blue")
+```
+
+### Evaluate the Model
+
+Q: Provide and interpret the F statistics, R^2, standard error,and p-values only.
+
+The $R^{2}$ is 0.2577, which is quite small and weak. The model only explains 25.77% variability of the response data around its mean, indicating a poor fit.
+
+The standard error is 9.371 on 188 degrees of freedom, which is quite high. This means some sample data points are significantly off the regression line.
+
+The p-value is 7.714e-14, nearly zero, which means we can confidently reject the null hypothesis and accept the alternative hypothesis. We can conclude that there is a strong relationship between `LifeExp` and `TotExp`.
+
+As we rejected the null hypothesis, we consider the f-statistics. The F statistics is 65.26, which indicates our model significance.
+
+### Regression Assumptions
+
+Q: Discuss whether the assumptions of simple linear regression met.
+
+We need to study four conditions, `linearity`, `normality of residuals`, `constant variability` and `independence of errors`, of our linear regression model.
+
+As 3 out of the 4 conditions were failed, the regression assumptions are **not met**.
+
+#### Linearity
+
+From the residual plot below, it is clear that the data is not linear. The residuals does not randomly disperse around y=0 but shows obvious pattern.
+
+```{r}
+plot(fitted(df_lm), resid(df_lm), 
+     main = "Total Expenditures vs Average Life Expectancy", 
+     xlab = "Fitted Life Expectancy (years)", ylab = "Residuals")
+abline(h=0, col="blue")
+```
+
+
+#### Normality of Residuals
+
+We can study the normality of residuals through qqplot and histogram of residuals.
+
+The QQ plot shows many outliers below the line at the upper end and the lower end. The data points barely follow the line. 
+
+The histogram is bimodal and seriously left-skewed. 
+
+Base on the two plots, we can conslude that the residuals are barely normal.
+
+```{r}
+qqnorm(resid(df_lm))
+qqline(resid(df_lm))
+hist(resid(df_lm), breaks=15, prob=TRUE)
+curve(dnorm(x, mean=mean(resid(df_lm)), sd=sd(resid(df_lm))), col="red", add=TRUE)
+```
+
+#### Variability
+
+From the scatterplot below, the variation of the residuals is relatively large and range between -30 and 15. However, if we look at the statistics from the table, the heteroscedasticity assumption is acceptable. 
+
+Therefore, the constant variability condition is poorly met.
+
+```{r}
+plot(fitted(df_lm), resid(df_lm), 
+     main = "Total Expenditures vs Average Life Expectancy", 
+     xlab = "Fitted Life Expectancy (years)", ylab = "Residuals")
+abline(h=0, col="blue")
+
+modelAssumptions(df_lm, "LINEAR")
+```
+
+
+
+#### Independence of errors
+
+From the graph below, the residuals are randomly dispersed.  It shows that the deviation of errors are independent of the time of data collection, independent of the errors collected earlier, which means it is not a time series dataset. Therefore, this condition appears to be met.
+
+```{r}
+plot(resid(df_lm), main="Residuals")
+abline(h=0, col="blue")
+```
+
+
+## Q2
+
+### Raise LifExp and TotExp
+
+Q: Raise life expectancy to the 4.6 power (i.e., LifeExp^4.6). Raise total expenditures to the 0.06 power (nearly a log transform, TotExp^.06). 
+
+```{r}
+df2 <- df
+df2$LifeExp <- df$LifeExp^(4.6)
+df2$TotExp <- df$TotExp^(0.06)
+```
+
+### Build Model
+
+Q: Plot LifeExp^4.6 as a function of TotExp^.06, and r re-run the simple regression model using the transformed variables. 
+
+```{r}
+df2_lm <- lm(LifeExp~TotExp, data=df2)
+summary(df2_lm)
+
+plot(LifeExp~TotExp, data=df2, main = "Total Expenditure^.06 vs Average Life Expectancy^4.6", xlab = "Sum of personal and government expenditures^.06 (dollars)", ylab = "Average life expectancy^4.6 for the country (years)")
+abline(reg=df2_lm, col="blue")
+```
+
+### Evaluate the Model
+
+Q: Provide and interpret the F statistics, R^2, standard error, and p-values.
+
+The $R^{2}$ is 0.7298, which is quite strong. This model explains 72.98% variability of the response data around its mean, indicating a good fit.
+
+The standard error is 90,490,000 on 188 degrees of freedom, which is very high. This huge increase might due to the exponential increase to the life expectancy variable.
+
+The p-value is <2.2e-16, nearly zero, which means we can confidently reject the null hypothesis and accept the alternative hypothesis. We can conclude that there is a strong relationship between `LifeExp` and `TotExp`.
+
+As we rejected the null hypothesis, we consider the f-statistics. The F statistics is 507.7, which indicates our model significance. It shows an even greater relationship between the two variables compared to our first model.
+
+### Regression Assumptions
+
+We need to study four conditions, `linearity`, `normality of residuals`, `constant variability` and `independence of errors`, of our linear regression model. 
+
+All 4 conditions are met, the regression assumptions are all met.
+
+#### Linearity
+
+From the residual plot below, it shows that the data is somewhat linear. The residuals are quite randomly dispersed around y=0 with no obvious pattern.
+
+```{r}
+plot(fitted(df2_lm), resid(df2_lm), 
+     main = "Total Expenditures^.06 vs Average Life Expectancy^4.6", 
+     xlab = "Fitted Life Expectancy (years)", ylab = "Residuals")
+abline(h=0, col="blue")
+```
+
+
+#### Normality of Residuals
+
+We can study the normality of residuals through qqplot and histogram of residuals.
+
+The QQ plot shows only some outliers below the line at the upper end and the lower end. Most of the data points follow the line in the middle.
+
+The histogram is unimodal and fairly normal. 
+
+Base on the two plots, we can conslude that the residuals are quite normal.
+
+```{r}
+qqnorm(resid(df2_lm))
+qqline(resid(df2_lm))
+hist(resid(df2_lm), breaks=15, xlim=c(-400000000, 400000000), prob=TRUE)
+curve(dnorm(x, mean=mean(resid(df2_lm)), sd=sd(resid(df2_lm))), col="red", add=TRUE)
+```
+
+#### Variability
+
+From the scatterplot below, the variation of the residuals is extremely large and range between -3e+08 and 3e+08. 
+
+However, if we study the heteroscedasticity, the assumptions are acceptable.  Therefore, the constant variability condition is poorly met.
+
+```{r}
+plot(fitted(df2_lm), resid(df2_lm), 
+     main = "Total Expenditures^.06 vs Average Life Expectancy^4.6", 
+     xlab = "Fitted Life Expectancy (years)", ylab = "Residuals")
+abline(h=0, col="blue")
+
+modelAssumptions(df2_lm, "LINEAR")
+```
+
+
+
+#### Independence of errors
+
+From the graph below, the residuals are randomly dispersed.  It shows that the deviation of errors are independent of the time of data collection, independent of the errors collected earlier, which means it is not a time series dataset. Therefore, this condition appears to be met.
+
+```{r}
+plot(resid(df2_lm), main="Residuals")
+abline(h=0, col="blue")
+```
+
+### Which model is "better?"
+
+Based on the statistics, the second model shows a greater relationship between the two variables LifExp and TotExp.  Also, all 4 regression assumptions are met with the second model, therefore our second model is better than the first model.
+
+## Q3
+
+Q: Using the results from 3, forecast life expectancy when TotExp^.06 =1.5. Then forecast life expectancy when TotExp^.06=2.5.
+
+```{r}
+values <- data.frame(TotExp=c(1.5,2.5))
+predict(df2_lm, values)^(1/4.6)
+```
+
+The life expectancy when TotExp^.06=1.5 is 63.31153.
+
+The life expectancy when TotExp^0.6=2.5 is 86.50645.
+
+## Q4
+
+### Build Model 
+
+Q: Build the following multiple regression model. 
+
+$$LifeExp = b0+b1 \times PropMd + b2 \times TotExp +b3 \times PropMD \times TotExp$$
+
+```{r}
+df3_lm <- lm(LifeExp ~ PropMD + TotExp + (PropMD*TotExp), data=df)
+summary(df3_lm)
+```
+
+### Evaluate the Model
+
+Q: Interpret the F Statistics, R^2, standard error, and p-values.
+
+The $R^{2}$ is 0.3574, which is quite small and weak. This model explains only 35.75% variability of the response data around its mean, indicating a poor fit.
+
+The standard error is 8.765 on 186 degrees of freedom, which is quite high. This means some sample data points are significantly off the regression line.
+
+The p-value is <2.2e-16, nearly zero, which means we can confidently reject the null hypothesis and accept the alternative hypothesis. We can conclude that there is a strong relationship between `LifeExp` and `TotExp`.
+
+As we rejected the null hypothesis, we consider the f-statistics. The F statistics is 34.49, which indicates our model significance. 
+
+
+
+### Regression Assumptions
+
+We need to study four conditions, `linearity`, `normality of residuals`, `constant variability` and `independence of errors`, of our regression model. 
+
+All 4 conditions are met, the regression assumptions are all met.
+
+#### Linearity
+
+From the residual plot below, it is clear that the data is not linear. The residuals does not randomly disperse around y=0 but shows obvious pattern.
+
+```{r}
+plot(fitted(df3_lm), resid(df3_lm), 
+     main = "Total Expenditures and Proportion of MDs vs Average Life Expectancy", 
+     xlab = "Fitted Life Expectancy (years)", ylab = "Residuals")
+abline(h=0, col="blue")
+```
+
+
+#### Normality of Residuals
+
+We can study the normality of residuals through qqplot and histogram of residuals.
+
+The QQ plot shows many outliers below the line at the upper end and the lower end. The data points barely follow the line. 
+
+The histogram is trimodal and seriously left-skewed. 
+
+Base on the two plots, we can conslude that the residuals are barely normal.
+
+```{r}
+qqnorm(resid(df3_lm))
+qqline(resid(df3_lm))
+hist(resid(df3_lm), breaks=15, prob=TRUE)
+curve(dnorm(x, mean=mean(resid(df3_lm)), sd=sd(resid(df3_lm))), col="red", add=TRUE)
+```
+
+#### Variability
+
+From the scatterplot below, the variation of the residuals is relatively large and range between -30 and 15. However, if we look at the statistics from the table, the heteroscedasticity assumption is acceptable. 
+
+Therefore, the constant variability condition is poorly met.
+
+
+```{r}
+plot(fitted(df3_lm), resid(df3_lm), 
+     main = "Total Expenditures and Proportion of MDs vs Average Life Expectancy", 
+     xlab = "Fitted Life Expectancy (years)", ylab = "Residuals")
+abline(h=0, col="blue")
+
+modelAssumptions(df3_lm, "NORMAL")
+```
+
+#### Independence of errors
+
+From the graph below, the residuals are randomly dispersed.  It shows that the deviation of errors are independent of the time of data collection, independent of the errors collected earlier, which means it is not a time series dataset. Therefore, this condition appears to be met.
+
+```{r}
+plot(resid(df3_lm), main="Residuals")
+abline(h=0, col="blue")
+```
+
+#### How good is the model?  
+
+This model shows a similar statistics with our first model and failed the regression assumptions. Therefore it is not a good model.
+
+
+## Q5
+
+Q5. Forecast LifeExp when PropMD=.03 and TotExp = 14. Does this forecast seem realistic? Why or why not?
+
+```{r}
+values <- data.frame(PropMD=0.03, TotExp=14)
+predict(df3_lm, values)
+```
+
+The forecast `LifeExp` is 107.696 years, which does not seem realistic.
+
+The model is built with PropMD=0.03 and TotExp=14, which is very unrealistic by increasing the proportion of MDs to 3% but having a extremely low total expenditures at 14. If we look at the original dataset, there are only two countries, Cyprus and San Marino, reach 3% of PropMD. But their total expenditures are 40k+ and 281k+ respectively. 
+
+Based on the unrealistic condition of PropMD and TotExp, it seems unrealistic to have a long life expectancy of 107.696.
