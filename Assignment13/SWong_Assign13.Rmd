@@ -1,0 +1,197 @@
+---
+title: "Data 605 HW13: Univariate & Multivariate Calculus"
+author: "Sin Ying Wong"
+date: "11/29/2020"
+output:
+  rmdformats::readthedown:
+    code_folding: hide
+    df_print: paged
+    highlight: tango
+    number_sections: yes
+    smooth_scroll: yes
+    theme: united
+    toc_collapsed: yes
+    toc_depth: 5
+    toc_float: yes
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+  pdf_document:
+    extra_dependencies:
+    - geometry
+    - multicol
+    - multirow
+  word_document:
+    toc: yes
+    toc_depth: '5'
+theme: lumen
+number_sections: yes
+toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+Please refer to the [Assignment 13 Document](https://github.com/shirley-wong/Data-605/blob/master/Assignment13/hw13.pdf).
+
+
+# Problem Set 1
+
+Use Integration by substitution to solve the integral below.
+
+$$\int 4e^{-7x}dx$$
+
+## Answer
+
+Let $F(x)=\int 4e^{-7x}dx$, $u=-7x$.
+
+Then $du=-7dx$, $dx=\frac{du}{-7}$.
+
+Thus, 
+
+$$\int 4e^{-7x}dx = \int \frac{4}{-7}e^{u}du$$
+$$=-\frac{4}{7}e^{u}+C, \;where\;c\;is\;a\;constant.$$
+$$=-\frac{4}{7}e^{-7x}+C, \;where\;c\;is\;a\;constant.$$
+
+# Problem Set 2
+
+Biologists are treating a pond contaminated with bacteria. The level of contamination is changing at a rate of $\frac{dN}{dt} = -\frac{3150}{t^{4}}-220$ bacteria per cubic centimeter per day, where $t$ is the number of days since treatment began. Find a function $N(t)$ to estimate the level of contamination if the level after 1 day was 6530 bacteria per cubic centimeter.
+
+## Answer
+
+We have, 
+$$N(t)-N(0) = \int_{0}^{t}(-\frac{3150}{s^{4}}-220)ds$$
+
+$$= \int_{0}^{t}-3150s^{-4}-220ds$$
+$$=\left [ -\frac{3150s^{-3}}{-3}-220s \right ]^{t}_{0}$$
+$$=1050t^{-3}-220t -0+0$$
+$$N(t)-N(0)=1050t^{-3}-220t$$
+
+Given $N(1)=6530$, $N(1)-N(0)=1050-220=830$,
+
+$$N(0)=6530-830=5700$$
+Therefore, 
+$$N(t)=1050t^{-3}-220t+5700$$
+
+# Problem Set 3
+
+Find the total area of the red rectangles in the figure below, where the equation of the line is $f(x)=2x-9$.
+
+![](https://github.com/shirley-wong/Data-605/blob/master/Assignment13/Q3.PNG?raw=true)
+
+## Answer
+
+By looking at the graph given above, the area of the read rectangles $=1+3+5+7=16$.
+
+By integration, the area is:
+
+$$=\int_{4.5}^{8.5}2x-9dx$$
+$$=\left [ x^{2}-9x \right ] ^{8.5}_{4.5}$$
+
+$$=8.5^{2}-9 \cdot 8.5 - 4.5^{2} + 9 \cdot 4.5$$
+
+$$=16$$
+
+# Problem Set 4
+
+Find the area of the region bounded by the graphs of the given equations, 
+$$y = x^{2}-2x-2, y = x + 2$$
+
+## Answer
+
+Graphing the two equations:
+
+![](https://github.com/shirley-wong/Data-605/blob/master/Assignment13/Q4.PNG?raw=true)
+
+Determining the intersections:
+
+$$x^{2}-2x-2 = x+2$$
+$$x^{2}-3x-4 = 0$$
+$$(x+1)(x-4)=0$$
+$$x=-1\;or\;x=4$$
+
+By integration,
+
+$$\int_{-1}^{4}x+2-(x^{2}-2x-2)$$
+$$=\int_{-1}^{4}-x^{2}+3x+4\,dx$$
+$$=\left[ -\frac{x^{3}}{3}+\frac{3x^{2}}{2}+4x \right]^{4}_{-1}$$
+$$=-\frac{4^{3}}{3}+\frac{3\cdot4^{2}}{2}+4^{2}-(\frac{1}{3}+\frac{3}{2}-4)$$
+$$=-\frac{64}{3}+24+16-\frac{1}{3}-\frac{3}{2}+4$$
+$$\approx 20.8333$$
+
+# Problem Set 5
+
+A beauty supply store expects to sell 110 flat irons during the next year. It costs \$3.75 to store one flat iron for one year. There is a fixed cost of \$8.25 for each order. Find the lot size and the number of orders per year that will minimize inventory costs.
+
+## Answer
+
+Let $s$ be lot size, $n$ be number of orders, $c$ be the inventory costs.
+
+Assume half of inventory keep in stocks.
+
+We have,
+
+$$c = 8.25 \cdot n + 3.75 \cdot \frac{s}{2} \;\; and \;\; ns=110$$
+$$c = 8.25 \cdot n + 3.75 \cdot \frac{110}{2n}$$
+$$c = 8.25 \cdot n + \frac{206.25}{n}$$
+$$c'=8.25-206.25\cdot n^{-2}=0$$
+$$n=5$$
+$$s=\frac{110}{5}=22$$
+$$c=8.25 \cdot 5 +\frac{206.25}{5}=82.5$$
+
+Therefore, to minimize the inventory costs, the lot size $22$ and number of orders $5$ can come up with the minimum inventory costs \$82.50.
+
+
+# Problem Set 6
+
+Use integration by parts to solve the integral below.
+
+$$\int ln(9x)\cdot x^{6} \, dx$$
+
+## Answer
+
+Let $u=ln(9x)$ and $dv=x^{6}dx$, 
+
+we have $du=\frac{1}{9x}\cdot 9dx=\frac{dx}{x}$ and $v=\frac{x^{7}}{7}$.
+
+To solve the given equation using integration by parts,
+
+$$\int ln(9x)\cdot x^{6} \, dx$$
+
+$$=\int u \,dv = u \cdot v - \int v \,du$$
+
+$$=ln(9x)\cdot\frac{x^{7}}{7} - \int \frac{x^{7}}{7} \frac{dx}{x}$$
+$$=ln(9x)\cdot\frac{x^{7}}{7} - \int \frac{x^{6}}{7}dx$$
+$$=ln(9x)\cdot\frac{x^{7}}{7} - \frac{x^{7}}{7\cdot7} +C$$
+$$=\frac{x^{7}}{7}\cdot \left[ ln(9x)-\frac{1}{7} \right] +C$$
+
+, where C is a constant.
+
+# Problem Set 7
+
+Determine whether $f(x)$ is a probability density function on the interval $[1, e^{6}]$. If not, determine the value of the definite integral.
+$$f(x)=\frac{1}{6x}$$
+
+## Answer
+
+For a function to be a probability density function on the interval:
+
+- requirement 1: The value must always be non-negative.
+
+- requirement 2: The definite integral has to equal 1.
+
+First, $f(x)=\frac{1}{6x} >0 \;\forall \;x>0,$ so the first requirement holds on the interval $[1, e^{6}]$.
+
+Second, 
+
+$$\int_{1}^{e^{6}} \frac{1}{6x} \,dx$$
+$$=\left[ \frac{ln(x)}{6} \right ] ^{e^{6}}_{1}$$
+$$=\frac{ln(e^{6})}{6} - \frac{ln(1)}{6}$$
+$$=1-0=1$$
+
+$\because$ The two requirements are both met.
+
+$\therefore$ The given function is a probability density function on the interval $[1, e^{6}]$.
