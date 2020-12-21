@@ -1,0 +1,594 @@
+---
+title: "Data 605 Final Exam: Computational Mathematics"
+author: "Sin Ying Wong"
+date: "12/20/2020"
+output:
+  rmdformats::readthedown:
+    code_folding: show
+    df_print: paged
+    highlight: tango
+    number_sections: yes
+    smooth_scroll: yes
+    theme: united
+    toc_collapsed: yes
+    toc_depth: 5
+    toc_float: yes
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+  pdf_document:
+    extra_dependencies:
+    - geometry
+    - multicol
+    - multirow
+  word_document:
+    toc: yes
+    toc_depth: '5'
+theme: lumen
+number_sections: yes
+toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+```{r libary, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(kableExtra)
+library(psych)
+library(Matrix)
+library(matrixcalc)
+```
+
+Please refer to the [Final Exam](https://github.com/shirley-wong/Data-605/blob/master/FinalExam/final%20project%202019.docx?raw=true).
+
+
+# Problem 1
+
+## Part 1
+
+Using R, generate a random variable X that has 10,000 random uniform numbers from 1 to N, where N can be any number of your choosing greater than or equal to 6.  Then generate a random variable Y that has 10,000 random normal numbers with a mean of $\mu = \sigma =(N+1)/2$.
+
+```{r Q1a}
+set.seed(3)
+
+N <- 10
+
+X <- runif(n=10000, min=1, max=N)
+summary(X)
+hist(X)
+
+Y <- rnorm(n=10000, mean=(N+1)/2, sd=(N+1)/2)
+summary(Y)
+hist(Y)
+```
+
+## Part 2
+
+*Probability:*   Calculate as a minimum the below probabilities a through c.  Assume the small letter "x" is estimated as the median of the X variable, and the small letter "y" is estimated as the 1st quartile of the Y variable.  Interpret the meaning of all probabilities.
+
+5 points.   a.   P(X>x | X>y)		b.  P(X>x, Y>y)		c.  P(X<x | X>y)				
+5 points.   Investigate whether P(X>x and Y>y)=P(X>x)P(Y>y) by building a table and evaluating the marginal and joint probabilities.
+
+5 points.  Check to see if independence holds by using Fisher’s Exact Test and the Chi Square Test.  What is the difference between the two? Which is most appropriate?
+
+
+```{r Q2}
+x <- round(median(X),3)
+x
+
+y <- round(quantile(Y,0.25)[[1]],3)
+y
+```
+
+
+### Part 2a 
+
+$$P(X>x|X>y) = \frac{P(X>x,X>y)}{P(X>y)}$$
+
+```{r Q2a}
+pAnB <- sum((X>x)&(X>y))/10000
+pB <- sum(X>y)/10000
+pA_B_a <- pAnB/pB
+pA_B_a
+```
+
+### Part 2b P(X>x, Y>y)
+
+We know that x is the median of X, so P(X>x) is about 0.5.
+
+Also, we know that y is the 1st quantile of Y, so P(Y>y) is about 0.75.
+
+Therefore, $P(X>x, Y>y) = P(X>x)\cdot P(Y>y) = 0.5 \cdot 0.75 = 0.375$
+
+```{r Q2b}
+pA <- sum(X>x)/10000
+pB <- sum(Y>y)/10000
+pAnB <- pA * pB
+pAnB
+```
+
+
+### Part 2c P(X<x | X>y)
+
+$$P(X<x|X>y) = \frac{P(X<x,X>y)}{P(X>y)}$$
+It is obvious that Part C = 1 - Part A. We can also prove that using the calculation below.
+
+```{r Q2c}
+pAnB <- sum((X<x)&(X>y))/10000
+pB <- sum(X>y)/10000
+pA_B <- pAnB/pB
+pA_B
+pA_B + pA_B_a
+```
+
+### Part 2d
+
+**Investigate whether P(X>x and Y>y)=P(X>x)P(Y>y) by building a table and evaluating the marginal and joint probabilities.**
+
+```{r Q2d}
+table <- data.frame(matrix(
+    c(sum(X>x & Y>y)/10000, sum(X<x & Y>y)/10000, sum(Y>y)/10000,
+         sum(X>x & Y<y)/10000, sum(X<x & Y<y)/10000, sum(Y<y)/10000,
+         sum(X>x)/10000, sum(X<x)/10000, 1.00), 
+         ncol=3, byrow=TRUE))
+colnames(table) <- c("X>x", "X<x", "Total")
+rownames(table) <- c("Y>y", "Y<y", "Total")
+
+table 
+```
+
+The marginal probability of P(X>x, Y>y) is 0.3756, which is similar to our answer in Part 2b 0.375. 
+
+As the difference is 0.0006, which is relatively small. I would conclude that the formula $P(X>x\;and\;Y>y) = P(X>x)P(Y>y)$ holds.
+
+
+### Part 2e
+
+**Check to see if independence holds by using Fisher’s Exact Test and the Chi Square Test.  What is the difference between the two? Which is most appropriate?**
+
+Fisher's Exact Test is a statistical test used to determine if there are nonrandom associations between two categorical variables. It works better when the sample is small, some cells have less than 5 counts in the contingency table. 
+
+Chi-Square Test is a statistical test commonly used for testing the relationship between categorical variables. It works better for large samples and requires each cell of the contingency matrix has at least 5 counts.
+
+The null hypothesis for both is that no relationship exists on the categorical variables in the population, i.e. they are independent. If we reject the null hypothesis, it is likely that the categorical variables are dependent.
+
+```{r Q2e}
+table2 <- data.frame(matrix(
+    c(sum(X>x & Y>y), sum(X<x & Y>y),
+         sum(X>x & Y<y), sum(X<x & Y<y)),
+         ncol=2, byrow=TRUE))
+colnames(table2) <- c("X>x", "X<x")
+rownames(table2) <- c("Y>y", "Y<y")
+
+table2
+
+fisher.test(table2)
+
+chisq.test(table2)
+```
+
+The p-value we got from Fisher's Exact Test is 0.7995, which is greater than 0.05. We accept the null hypothesis that the variables are very likely independent of each other.
+
+The p-value we got from Chi-Square Test is also 0.7995, which is greater than 0.05. We accept the null hypothesis that the variables are very likely independent of each other.
+
+As we have a large sample size (N=10000) here with over 1k counts in each conditions in `table2` and conventionally Chi-Sqaure test works better than Fisher's Exact Test for large samples, it is more appropriate to use Chi-Sqaure Test here for this question.
+
+# Problem 2
+
+You are to register for Kaggle.com (free) and compete in the House Prices: [Advanced Regression Techniques competition](https://www.kaggle.com/c/house-prices-advanced-regression-techniques). I want you to do the following.
+
+5 points.  *Descriptive and Inferential Statistics.* Provide univariate descriptive statistics and appropriate plots for the training data set.  Provide a scatterplot matrix for at least two of the independent variables and the dependent variable. Derive a correlation matrix for *any* three quantitative variables in the dataset.  Test the hypotheses that the correlations between each pairwise set of variables is 0 and provide an 80% confidence interval.  Discuss the meaning of your analysis.  Would you be worried about familywise error? Why or why not?
+
+5 points. *Linear Algebra and Correlation.*  Invert your correlation matrix from above. (This is known as the precision matrix and contains variance inflation factors on the diagonal.) Multiply the correlation matrix by the precision matrix, and then multiply the precision matrix by the correlation matrix. Conduct LU decomposition on the matrix.  
+
+5 points.  *Calculus-Based Probability & Statistics.*  Many times, it makes sense to fit a closed form distribution to data.  Select a variable in the Kaggle.com training dataset that is skewed to the right, shift it so that the minimum value is absolutely above zero if necessary.  Then load the MASS package and run fitdistr to fit an exponential probability density function.  (See  https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/fitdistr.html ).  Find the optimal value of $\lambda$ for this distribution, and then take 1000 samples from this exponential distribution using this value (e.g., rexp(1000, $\lambda$)).  Plot a histogram and compare it with a histogram of your original variable.   Using the exponential pdf, find the 5th and 95th percentiles using the cumulative distribution function (CDF).   Also generate a 95% confidence interval from the empirical data, assuming normality.  Finally, provide the empirical 5th percentile and 95th percentile of the data.  Discuss.
+
+10 points.  *Modeling.*  Build some type of multiple regression model and **submit your model** to the competition board.  Provide your complete model summary and results with analysis.  **Report your Kaggle.com user name and score.**
+
+
+## Data Description
+
+Please refer to the [data description](https://raw.githubusercontent.com/shirley-wong/Data-605/master/FinalExam/Problem%202/data_description.txt) file.
+
+## Read Data
+
+```{r library}
+library(tidyverse)
+library(kableExtra)
+library(ggplot2)
+library(corrplot)
+```
+
+```{r read data}
+train <- read.csv("https://raw.githubusercontent.com/shirley-wong/Data-605/master/FinalExam/Problem%202/train.csv")
+test <- read.csv("https://raw.githubusercontent.com/shirley-wong/Data-605/master/FinalExam/Problem%202/test.csv")
+
+dim(train)
+head(train)
+summary(train)
+```
+
+We have 81 variables and 1460 observations in the training set, where `SalePrice` is the response variable.
+
+**Check Data Type**
+
+By reading the data description, we know that the variable `MSSubClass` is a categorical variable identifies the type of dwelling involved in the sale. Thus, we need to change its data type for both training set and testing set.
+
+```{r}
+train$MSSubClass <- as.factor(train$MSSubClass)
+test$MSSubClass <- as.factor(test$MSSubClass)
+```
+
+## Descriptive and Inferential Statistics
+
+### Plots 
+
+- summary of training set
+
+```{r}
+summary(train)
+```
+
+- `SalePrice`
+
+It is our response variable. From the histogram, we can see that it is right skewed with most houses being sold below \$200,000 and some between \$200k to \$400k.
+
+```{r saleprice}
+summary(train$SalePrice)
+hist(train$SalePrice)
+plot(train[c("SalePrice", "YearBuilt")])
+```
+
+
+- `BldgType`
+
+Most of the building types are single-family detached with only little two-family convension, deplex, townhouse end unit and townhouse inside unit.
+
+```{r bldgtype}
+summary(train$BldgType)
+plot(train$BldgType)
+plot(train[c("SalePrice", "BldgType")])
+```
+
+
+- `HouseStyle`
+
+Most of the house style is one story and two story. 
+
+```{r housestyle}
+summary(train$HouseStyle)
+plot(train$HouseStyle)
+plot(train[c("SalePrice", "HouseStyle")])
+```
+
+
+- `OverallQual`
+
+The overall quality is between average and good.
+
+```{r overallqual}
+train$OverallQual %>% as.factor() %>% summary()
+hist(train$OverallQual, breaks=13)
+plot(train[c("SalePrice", "OverallQual")])
+```
+
+
+
+- `OverallCond`
+
+The overall condition of the houses are average.
+
+```{r overallcond}
+train$OverallCond %>% as.factor() %>% summary()
+hist(train$OverallCond, breaks=13)
+plot(train[c("SalePrice", "OverallCond")])
+```
+
+
+- `YearBuilt`
+
+Most of the houses are built after 1950s. 
+
+```{r yearbuilt}
+summary(train$YearBuilt)
+hist(train$YearBuilt)
+plot(train[c("YearBuilt", "SalePrice")])
+```
+
+
+### Scatterplot matrix and correlation matrix
+
+From the plots below, we have the `OverallQual` being highly correlated to our dependent variable `SalePrice` with correlation coefficient 0.79.  Our independent variable `GrLivArea` and `FullBath` are also correlated to our dependent variable `SalePrice` with correlation coefficients 0.71 and 0.56 respectively. These values make sense as the large the above ground living area and the more the full bath come with bigger house. And that the bigger the house, the higher the sale price.
+
+```{r pairplots}
+#scatterplot matrix
+pairs(train[,c("LotArea", "OverallQual", "OverallCond", "YearBuilt", "GrLivArea", "FullBath", "SalePrice")])
+
+#correlation matrix
+pairs.panels(train[,c("LotArea", "OverallQual", "OverallCond", "YearBuilt", "GrLivArea", "FullBath", "SalePrice")])
+
+o_g <- cor(train$OverallQual, train$GrLivArea)
+g_s <- cor(train$GrLivArea, train$SalePrice)
+o_s <- cor(train$SalePrice, train$OverallQual)
+
+#correlation matrix of three quantitative variables
+cm <- data.frame(matrix(
+    c(1.0, o_g, o_s, o_g, 1.0, g_s, o_s, g_s, 1.0), 
+         ncol=3, byrow=TRUE))
+colnames(cm) <- c("OverallQual", "GrLivArea", "SalePrice")
+rownames(cm) <- c("OverallQual", "GrLivArea", "SalePrice")
+
+cm 
+```
+
+
+### Test the hypothesis
+
+Limit to three quantitative variables. Test the hypothesis that the correlations between each pairwise set of variables is 0 and provide an 80% confidence interval.
+```{r}
+#limit to three quantitative variables
+pairs.panels(train[,c("OverallQual", "GrLivArea", "SalePrice")])
+```
+
+1. `SalePrice` vs `GrLivArea`
+
+The p-value is nearly 0 and the 80% confidence interval does not include 0, so we reject the null hypothesis of true correlation equals zero.
+
+```{r}
+cor.test(train$SalePrice, train$GrLivArea, data=train, method="pearson", conf.level = 0.8)
+```
+
+2. `SalePrice` vs `OverallQual`
+
+The p-value is nearly 0 and the 80% confidence interval does not include 0, so we reject the null hypothesis of true correlation equals zero.
+
+```{r}
+cor.test(train$SalePrice, train$OverallQual, data=train, method="pearson", conf.level = 0.8)
+```
+
+3. `GrLivArea` vs `OverallQual`
+
+The p-value is nearly 0 and the 80% confidence interval does not include 0, so we reject the null hypothesis of true correlation equals zero.
+
+```{r}
+cor.test(train$GrLivArea, train$OverallQual, data=train, method="pearson", conf.level = 0.8)
+```
+
+Although these variables are highly correlated to each other, this does not imply absolute causation between them, but it is commonly believed that larger house and better quality sells at high price. We can hope the independent variables can help us explain the response variable.
+
+Familywise error rate (FWE or FWER) is the probability of a coming to at least one false conclusion in a series of hypothesis tests. It is the probability of making at least one Type I Error. It is also called alpha inflation or cumulative Type I error.
+
+$FWE \leq 1-(1-\alpha)^{c}$ where $\alpha$ is the alpha level for an individual test (e.g. 0.5) and $c$ is the number of comparisons/tests.
+
+Thus, for this question, $\alpha = 0.2$ for an 80% confidence interval and $c=3$ for three variables used for the hypothesis test.
+
+$$FWE \leq 1-(1-0.2)^{3} = 0.488$$
+
+It means that we have about 48.8% chance of making at least one Type I Error across the three hypothesis tests. 
+
+I would not be worried as we can reduce the alpha, i.e. increase the confidence interval, for all three tests to reduce the familywise error rate.
+
+## Linear Algebra and Correlation
+
+1. **Invert the correlation matrix from above. This is known as the precision matrix and contains variance inflation factors on the diagonal.**
+
+```{r precision matrix}
+cm <- as.matrix(cm)
+pm <- solve(cm)
+pm
+```
+
+2. Multiply the correlation matrix by the precision matrix.
+
+```{r}
+round(pm %*% cm, 4)
+```
+
+3. Multiply the precision matrix by the correlation matrix.
+
+```{r}
+round(cm %*% pm, 4)
+```
+
+4. Comduct LU decomposition on the matrix
+
+```{r LU}
+LU <- lu.decomposition(cm)
+LU
+```
+
+check the result:
+
+```{r}
+LU$L %*% LU$U - cm
+```
+
+
+## Calculus-Based Probability & Statistics
+
+To find a variable that is skewed to the right from the training set, first choose one that does not have NA values and study their skewness.
+
+```{r}
+skew(train$LotArea)
+skew(train$BsmtFinSF1)
+skew(train$BsmtFinSF2)
+skew(train$BsmtUnfSF)
+skew(train$TotalBsmtSF)
+skew(train$X1stFlrSF)
+skew(train$X2ndFlrSF)
+skew(train$GarageArea)
+skew(train$WoodDeckSF)
+skew(train$OpenPorchSF)
+skew(train$EnclosedPorch)
+skew(train$X3SsnPorch)
+skew(train$ScreenPorch)
+skew(train$PoolArea)
+colSums(train == 0)
+```
+
+By looking at the training set, `PoolArea` have high skewness but there are many 0s (1453). It happens to many other variables too. 
+
+Therefore, I will pick one with less 0s and reasonable skewness, the `BsmtFinSF1`. Adding 1 to the datapoints so that the minimum value is absolutely above zero.
+
+```{r}
+summary(train$BsmtFinSF1)
+library(MASS)
+
+mydata <- train$BsmtFinSF1 + 1
+#fit an exponential probability density function
+bsmtfinsf1_exp <- fitdistr(mydata, "exponential" )
+
+#find the optimal value of lambda
+lambda_est <- bsmtfinsf1_exp$estimate
+
+#take 1000 samples from this exp dist using the lambda value
+ExponentialSamples <- rexp(1000, lambda_est)
+
+#plot a histogram and compare it with the original one
+par(mfrow=c(2,1))
+hist(ExponentialSamples, breaks=50)
+hist(mydata, breaks=50)
+```
+
+**Next, find the 5th and 95th percentiles using the cumulative distribution function.**
+
+```{r}
+qexp(c(0.05, 0.95), lambda_est)
+```
+
+The 5th percentile of the exponential distribution at the optimal lambda is 22.75574. The 95th percentile is 1329.02585.
+
+**Also, generate a 95% confidence interval from the empirical data, assuming normality.**
+
+```{r}
+qnorm(c(0.025, 0.975), mean(mydata), sd(mydata))
+```
+
+Assuming the data is normally distributed (which is clearly not the case), the 95% confidence interval for the data is (-449.2961, 1338.5756). This result proves that the distribution is not normal as it does not make sense for us to have negative values from our data. 
+
+
+**Finally, provide the empirical 5th percentile and 95th percentile of the data.**
+
+```{r}
+quantile(mydata, c(0.05, 0.95))
+```
+
+The 5th and 95th quantiles are 1 and 1275 respectively. We have 1 as our 5th because we added 1 to the datapoints so that our minimum value is absolutely above zero. To show the true data, the 5th quantile should deduct by 1.
+
+**Discuss**
+
+As the variable `BsmtFinSF1` has some 0s in the training set, these datapoints provides a large portion of the right-skewed nature.  It may be because some houses do not have basements or livable basement to be counted into the dataset.
+
+
+## Modeling
+
+**Build some type of multiple regression model and submit your model to the competition board.  Provide your complete model summary and results with analysis.  Report your Kaggle.com user name and score.**
+
+```{r message=FALSE, warning=FALSE}
+train$LotFrontage[is.na(train$LotFrontage)] <- 0
+train$MasVnrArea[is.na(train$MasVnrArea)] <- 0
+train$GarageYrBlt[is.na(train$GarageYrBlt)] <- "0"
+
+test$LotFrontage[is.na(test$LotFrontage)] <- 0
+test$MasVnrArea[is.na(test$MasVnrArea)] <- 0
+test$GarageYrBlt[is.na(test$GarageYrBlt)] <- "0"
+```
+
+**1st model:**
+
+I created the 1st model by removing all categorical variables. 
+
+```{r message=FALSE, warning=FALSE}
+# 1st model: dropping categorical variables
+train1 <- train %>% dplyr::select(-Id, -MSSubClass, -MSZoning, -Street, -Alley, -LotShape, -LandContour, -Utilities, -LotConfig, -LandSlope, -Neighborhood, -Condition1, -Condition2, -BldgType, -HouseStyle, -RoofStyle, -RoofMatl, -Exterior1st, -Exterior2nd, -MasVnrType, -ExterQual, -ExterCond, -Foundation, -BsmtQual, -BsmtCond, -BsmtExposure, -BsmtFinType1, -BsmtFinType2, -Heating, -HeatingQC, -CentralAir, -Electrical, -KitchenQual, -Functional, -FireplaceQu, -GarageType, -GarageFinish, -GarageQual, -GarageCond, -PavedDrive, -PoolQC, -Fence, -MiscFeature, -SaleType, -SaleCondition, -GarageYrBlt)
+
+test1 <- test %>% dplyr::select(-Id, -MSSubClass, -MSZoning, -Street, -Alley, -LotShape, -LandContour, -Utilities, -LotConfig, -LandSlope, -Neighborhood, -Condition1, -Condition2, -BldgType, -HouseStyle, -RoofStyle, -RoofMatl, -Exterior1st, -Exterior2nd, -MasVnrType, -ExterQual, -ExterCond, -Foundation, -BsmtQual, -BsmtCond, -BsmtExposure, -BsmtFinType1, -BsmtFinType2, -Heating, -HeatingQC, -CentralAir, -Electrical, -KitchenQual, -Functional, -FireplaceQu, -GarageType, -GarageFinish, -GarageQual, -GarageCond, -PavedDrive, -PoolQC, -Fence, -MiscFeature, -SaleType, -SaleCondition, -GarageYrBlt)
+test1$BsmtFinSF1[is.na(test1$BsmtFinSF1)] <- 0
+test1$BsmtFinSF2[is.na(test1$BsmtFinSF2)] <- 0
+test1$BsmtUnfSF[is.na(test1$BsmtUnfSF)] <- 0
+test1$TotalBsmtSF[is.na(test1$TotalBsmtSF)] <- 0
+test1$BsmtFullBath[is.na(test$BsmtFullBath)] <- 0
+test1$BsmtHalfBath[is.na(test1$BsmtHalfBath)] <- 0
+test1$GarageCars[is.na(test1$GarageCars)] <- 0
+test1$GarageArea[is.na(test1$GarageArea)] <- 0
+```
+
+```{r}
+model1 <- lm(SalePrice ~ ., data=train1)
+summary(model1)
+plot(model1)
+hist(resid(model1), breaks=35, prob=TRUE)
+curve(dnorm(x, mean = mean(resid(model1)), sd = sd(resid(model1))), col="red", add=TRUE)
+```
+
+The residuals are randomly dispersed around y=0 with some outliers. 
+
+The QQ plot also shows some outliers at both end of the graph.
+
+The histogram is unimodal and fairly normal.
+
+
+
+**2nd model:**
+
+```{r}
+#backward stepwise regression
+backward <- stepAIC(model1, direction="both")
+
+summary(backward)
+```
+
+The backward stepwise function starts with my `model1`. At each step, it eliminates the worst variable from the model to improve the AIC value. The same step continues until there are no further ways to improve the AIC value.
+
+It results with multiple R-squared 0.8359 and adjusted R-squared 0.8213.
+
+```{r message=FALSE, warning=FALSE}
+plot(backward)
+hist(resid(backward), breaks=35, prob=TRUE)
+curve(dnorm(x, mean = mean(resid(backward)), sd = sd(resid(backward))), col="red", add=TRUE)
+```
+
+The residuals are randomly dispersed around y=0 with some outliers. 
+
+The QQ plot also shows some outliers at both end of the graph.
+
+The histogram is unimodal and fairly normal.
+
+
+
+
+**Predict the SalePrice on test dataset.**
+
+```{r}
+pred1 <- predict(model1, test1)
+kaggle1 <- as.data.frame(cbind(test$Id, pred1))
+colnames(kaggle1) <- c("Id", "SalePrice")
+write.csv(kaggle1, file="Kaggle_Submission1.csv", quote=FALSE, row.names=FALSE)
+```
+
+`Pred1` got 0.44206 on Kaggle.
+
+```{r}
+pred2 <- predict(backward, test1)
+kaggle2 <- as.data.frame(cbind(test$Id, pred2))
+colnames(kaggle2) <- c("Id", "SalePrice")
+write.csv(kaggle2, file="Kaggle_Submission2.csv", quote=FALSE, row.names=FALSE)
+```
+
+`Pred2` got 0.44345 on Kaggle.
+
+
+**Kaggle**
+
+Kaggle Username: sinyingwong
+
+![Kaggle Screenshot](https://github.com/shirley-wong/Data-605/blob/master/FinalExam/Problem%202/KaggleSubmissions.PNG?raw=true)
+
+
+**Future improvement**
+
+Improve the model by using kNN, Decision Tree, Bootstrap, Bagging, and/or other combinations of the algorithms. 
