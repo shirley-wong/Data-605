@@ -43,7 +43,12 @@ library(Matrix)
 library(matrixcalc)
 ```
 
-Please refer to the [Final Exam](https://github.com/shirley-wong/Data-605/blob/master/FinalExam/final%20project%202019.docx?raw=true).
+Please refer to the [Final Exam Document](https://github.com/shirley-wong/Data-605/blob/master/FinalExam/final%20project%202019.docx?raw=true).
+
+
+# Youtube Presentation
+
+[Youtube Presentation](https://youtu.be/TAEyGIoRWN4) : https://youtu.be/TAEyGIoRWN4
 
 
 # Problem 1
@@ -525,6 +530,8 @@ hist(resid(model1), breaks=35, prob=TRUE)
 curve(dnorm(x, mean = mean(resid(model1)), sd = sd(resid(model1))), col="red", add=TRUE)
 ```
 
+The R-square of our `model1` is 0.8075, and the adjusted R-squared is 0.8032.
+
 The residuals are randomly dispersed around y=0 with some outliers. 
 
 The QQ plot also shows some outliers at both end of the graph.
@@ -544,7 +551,7 @@ summary(backward)
 
 The backward stepwise function starts with my `model1`. At each step, it eliminates the worst variable from the model to improve the AIC value. The same step continues until there are no further ways to improve the AIC value.
 
-It results with multiple R-squared 0.8359 and adjusted R-squared 0.8213.
+It results with multiple R-squared 0.8066 and adjusted R-squared 0.8039.
 
 ```{r message=FALSE, warning=FALSE}
 plot(backward)
